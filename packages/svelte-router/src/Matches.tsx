@@ -1,10 +1,11 @@
 import * as Solid from 'solid-js'
 import warning from 'tiny-warning'
-import { CatchBoundary, ErrorComponent } from './CatchBoundary'
+import CatchBoundary from './CatchBoundary.svelte'
+import ErrorComponent from './ErrorComponent.svelte'
 import { useRouterState } from './useRouterState'
 import { useRouter } from './useRouter'
 import { Transitioner } from './Transitioner'
-import { matchContext } from './matchContext'
+import { getMatchContext } from './matchContext'
 import { Match } from './Match'
 import { SafeFragment } from './SafeFragment'
 import type {
@@ -84,7 +85,7 @@ function MatchesInner() {
           warning(false, error.message || error.toString())
         }}
       >
-        {matchId() ? <Match matchId={matchId()!} /> : null}
+        {matchId() ? <Match matchId={matchId()} /> : null}
       </CatchBoundary>
     </matchContext.Provider>
   )
@@ -202,7 +203,7 @@ export function useMatches<
         ? opts.select(matches as Array<MakeRouteMatchUnion<TRouter>>)
         : matches
     },
-  } as any) as Solid.Accessor<UseMatchesResult<TRouter, TSelected>>
+  } as any)
 }
 
 export function useParentMatches<
@@ -211,13 +212,13 @@ export function useParentMatches<
 >(
   opts?: UseMatchesBaseOptions<TRouter, TSelected>,
 ): Solid.Accessor<UseMatchesResult<TRouter, TSelected>> {
-  const contextMatchId = Solid.useContext(matchContext)
+  const contextMatchId = getMatchContext()
 
   return useMatches({
     select: (matches: Array<MakeRouteMatchUnion<TRouter>>) => {
       matches = matches.slice(
         0,
-        matches.findIndex((d) => d.id === contextMatchId()),
+        matches.findIndex((d) => d.id === contextMatchId),
       )
       return opts?.select ? opts.select(matches) : matches
     },
@@ -230,12 +231,12 @@ export function useChildMatches<
 >(
   opts?: UseMatchesBaseOptions<TRouter, TSelected>,
 ): Solid.Accessor<UseMatchesResult<TRouter, TSelected>> {
-  const contextMatchId = Solid.useContext(matchContext)
+  const contextMatchId = getMatchContext()
 
   return useMatches({
     select: (matches: Array<MakeRouteMatchUnion<TRouter>>) => {
       matches = matches.slice(
-        matches.findIndex((d) => d.id === contextMatchId()) + 1,
+        matches.findIndex((d) => d.id === contextMatchId) + 1,
       )
       return opts?.select ? opts.select(matches) : matches
     },

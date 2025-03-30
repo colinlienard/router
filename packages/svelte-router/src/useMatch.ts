@@ -1,7 +1,6 @@
-import * as Solid from 'solid-js'
 import invariant from 'tiny-invariant'
 import { useRouterState } from './useRouterState'
-import { dummyMatchContext, matchContext } from './matchContext'
+import { getDummyMatchContext, getMatchContext } from './matchContext'
 import type {
   AnyRouter,
   MakeRouteMatch,
@@ -30,7 +29,7 @@ export type UseMatchRoute<out TFrom> = <
   TSelected = unknown,
 >(
   opts?: UseMatchBaseOptions<TRouter, TFrom, true, true, TSelected>,
-) => Solid.Accessor<UseMatchResult<TRouter, TFrom, true, TSelected>>
+) => UseMatchResult<TRouter, TFrom, true, TSelected>
 
 export type UseMatchOptions<
   TRouter extends AnyRouter,
@@ -66,17 +65,13 @@ export function useMatch<
     ThrowConstraint<TStrict, TThrow>,
     TSelected
   >,
-): Solid.Accessor<
-  ThrowOrOptional<UseMatchResult<TRouter, TFrom, TStrict, TSelected>, TThrow>
-> {
-  const nearestMatchId = Solid.useContext(
-    opts.from ? dummyMatchContext : matchContext,
-  )
+): ThrowOrOptional<UseMatchResult<TRouter, TFrom, TStrict, TSelected>, TThrow> {
+  const nearestMatchId = opts.from ? getDummyMatchContext() : getMatchContext()
 
   const matchSelection = useRouterState({
     select: (state: any) => {
       const match = state.matches.find((d: any) =>
-        opts.from ? opts.from === d.routeId : d.id === nearestMatchId(),
+        opts.from ? opts.from === d.routeId : d.id === nearestMatchId,
       )
 
       invariant(

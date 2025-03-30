@@ -1,11 +1,10 @@
-import { useStore } from '@tanstack/solid-store'
+import { useStore } from '@tanstack/svelte-store'
 import { useRouter } from './useRouter'
 import type {
   AnyRouter,
   RegisteredRouter,
   RouterState,
 } from '@tanstack/router-core'
-import type { Accessor } from 'solid-js'
 
 export type UseRouterStateOptions<TRouter extends AnyRouter, TSelected> = {
   router?: TRouter
@@ -22,7 +21,7 @@ export function useRouterState<
   TSelected = unknown,
 >(
   opts?: UseRouterStateOptions<TRouter, TSelected>,
-): Accessor<UseRouterStateResult<TRouter, TSelected>> {
+): UseRouterStateResult<TRouter, TSelected> {
   const contextRouter = useRouter<TRouter>({
     warn: opts?.router === undefined,
   })
@@ -32,5 +31,5 @@ export function useRouterState<
     if (opts?.select) return opts.select(state)
 
     return state
-  }) as Accessor<UseRouterStateResult<TRouter, TSelected>>
+  }) as UseRouterStateResult<TRouter, TSelected>
 }
