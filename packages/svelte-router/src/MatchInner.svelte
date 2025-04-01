@@ -1,14 +1,17 @@
 <script lang="ts">
-  import { AnyRoute, pick } from '@tanstack/router-core'
+  import { AnyRoute, isRedirect, pick } from '@tanstack/router-core'
   import { useRouter } from './useRouter'
   import { useRouterState } from './useRouterState'
   import Outlet from './Outlet.svelte'
+  import RouteNotFound from './RouteNotFound.svelte'
+  import ErrorComponent from './ErrorComponent.svelte'
+  import invariant from 'tiny-invariant'
 
   let props: { matchId: string } = $props()
 
   const router = useRouter()
 
-  const matchState: any = useRouterState({
+  const matchState = useRouterState({
     select: (s) => {
       const matchIndex = s.matches.findIndex((d) => d.id === props.matchId)
       const match = s.matches[matchIndex]!
@@ -33,96 +36,45 @@
     },
   })
 
-  const route = () => router.routesById[matchState().routeId]!
+  const route = router.routesById[matchState.routeId]!
 
-  const match = () => matchState().match
+  const match = matchState.match
 
-  const out = () => {
-    const Comp = route().options.component ?? router.options.defaultComponent
-    if (Comp) {
-      return Comp
-    }
-    return Outlet
+  if (match.status === 'redirected') {
+    invariant(isRedirect(match.error), 'Expected a redirect error')
+    router.getMatch(match.id)?.loadPromise?.resolve() // Resolve?
   }
 </script>
 
-<!-- <Solid.Switch>
-      <Solid.Match when={match().status === 'notFound'}>
-        {(_) => {
-          invariant(isNotFound(match().error), 'Expected a notFound error')
-
-          return renderRouteNotFound(router, route(), match().error)
-        }}
-      </Solid.Match>
-      <Solid.Match when={match().status === 'redirected'}>
-        {(_) => {
-          invariant(isRedirect(match().error), 'Expected a redirect error')
-
-          const [loaderResult] = Solid.createResource(async () => {
-            await new Promise((r) => setTimeout(r, 0))
-            return router.getMatch(match().id)?.loadPromise
-          })
-
-          return <>{loaderResult()}</>
-        }}
-      </Solid.Match>
-      <Solid.Match when={match().status === 'error'}>
-        {(_) => {
-          if (router.isServer) {
-            const RouteErrorComponent =
-              (route().options.errorComponent ??
-                router.options.defaultErrorComponent) ||
-              ErrorComponent
-
-            return (
-              <RouteErrorComponent
-                error={match().error}
-                info={{
-                  componentStack: '',
-                }}
-              />
-            )
-          }
-
-          throw match().error
-        }}
-      </Solid.Match>
-      <Solid.Match when={match().status === 'pending'}>
-        {(_) => {
-          const pendingMinMs =
-            route().options.pendingMinMs ?? router.options.defaultPendingMinMs
-
-          if (pendingMinMs && !router.getMatch(match().id)?.minPendingPromise) {
-            // Create a promise that will resolve after the minPendingMs
-            if (!router.isServer) {
-              const minPendingPromise = createControlledPromise<void>()
-
-              Promise.resolve().then(() => {
-                router.updateMatch(match().id, (prev) => ({
-                  ...prev,
-                  minPendingPromise,
-                }))
-              })
-
-              setTimeout(() => {
-                minPendingPromise.resolve()
-
-                // We've handled the minPendingPromise, so we can delete it
-                router.updateMatch(match().id, (prev) => ({
-                  ...prev,
-                  minPendingPromise: undefined,
-                }))
-              }, pendingMinMs)
-            }
-          }
-
-          const [loaderResult] = Solid.createResource(async () => {
-            await new Promise((r) => setTimeout(r, 0))
-            return router.getMatch(match().id)?.loadPromise
-          })
-
-          return <>{loaderResult()}</>
-        }}
-      </Solid.Match>
-      <Solid.Match when={match().status === 'success'}>{out()}</Solid.Match>
-    </Solid.Switch> -->
+{#if match.status === 'notFound'}
+  <RouteNotFound {router} {route} data={match.error} />
+{:else if match.status === 'error'}
+  {#if router.isServer}
+    {#if route().options.errorComponent}
+      {@render route().options.errorComponent({
+        error: match.error,
+        info: { componentStack: '' },
+      })}
+    {:else if router.options.defaultErrorComponent}
+      {@render router.options.defaultErrorComponent({
+        error: match.error as Error,
+        info: { componentStack: '' },
+        reset: () => null,
+      })}
+    {:else}
+      <ErrorComponent error={match.error} />
+    {/if}
+  {:else}
+    {(() => {
+      throw match.error
+    })()}
+  {/if}
+{:else if match.status === 'success'}
+  {#if route().options.component}
+    {@render route().options.component()}
+  {:else if router.options.defaultComponent}
+    {@render router.options.defaultComponent(undefined)}
+  {:else}
+    <Outlet />
+  {/if}
+{/if}

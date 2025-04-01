@@ -3,9 +3,9 @@
   import { getMatchContext } from './matchContext'
   import { useRouter } from './useRouter'
   import { useRouterState } from './useRouterState'
-  import { renderRouteNotFound } from './renderRouteNotFound'
   import { rootRouteId } from '@tanstack/router-core'
   import Match from './Match.svelte'
+  import RouteNotFound from './RouteNotFound.svelte'
 
   const router = useRouter()
   const matchId = getMatchContext()
@@ -38,39 +38,13 @@
 </script>
 
 {#if parentGlobalNotFound}
-  {renderRouteNotFound(router, route(), undefined)}
+  <RouteNotFound {router} route={route()} data={undefined} />
 {:else if childMatchId}
   {#if matchId === rootRouteId}
     <!-- TODO -->
-    {@render router.options.defaultPendingComponent?.(undefined)}
+    <!-- {@render router.options.defaultPendingComponent?.(undefined)} -->
     <Match {matchId} />
   {:else}
     <Match {matchId} />
   {/if}
 {/if}
-
-<!-- <Solid.Switch>
-      <Solid.Match when={parentGlobalNotFound()}>
-        {renderRouteNotFound(router, route(), undefined)}
-      </Solid.Match>
-      <Solid.Match when={childMatchId()}>
-        {(matchId) => {
-          // const nextMatch = <Match matchId={matchId()} />
-
-          return (
-            <Solid.Show
-              when={matchId() === rootRouteId}
-              fallback={<Match matchId={matchId()} />}
-            >
-              <Solid.Suspense
-                fallback={
-                  <Dynamic component={router.options.defaultPendingComponent} />
-                }
-              >
-                <Match matchId={matchId()} />
-              </Solid.Suspense>
-            </Solid.Show>
-          )
-        }}
-      </Solid.Match>
-    </Solid.Switch> -->
