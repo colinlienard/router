@@ -1,71 +1,71 @@
 import { useMatch } from './useMatch'
-import type { Accessor } from 'solid-js'
 import type {
   AnyRouter,
   RegisteredRouter,
-  ResolveUseParams,
+  ResolveUseSearch,
   StrictOrFrom,
   ThrowConstraint,
   ThrowOrOptional,
-  UseParamsResult,
+  UseSearchResult,
 } from '@tanstack/router-core'
 
-export interface UseParamsBaseOptions<
+export interface UseSearchBaseOptions<
   TRouter extends AnyRouter,
   TFrom,
   TStrict extends boolean,
   TThrow extends boolean,
   TSelected,
 > {
-  select?: (params: ResolveUseParams<TRouter, TFrom, TStrict>) => TSelected
+  select?: (state: ResolveUseSearch<TRouter, TFrom, TStrict>) => TSelected
   shouldThrow?: TThrow
 }
 
-export type UseParamsOptions<
+export type UseSearchOptions<
   TRouter extends AnyRouter,
-  TFrom extends string | undefined,
+  TFrom,
   TStrict extends boolean,
   TThrow extends boolean,
   TSelected,
 > = StrictOrFrom<TRouter, TFrom, TStrict> &
-  UseParamsBaseOptions<TRouter, TFrom, TStrict, TThrow, TSelected>
+  UseSearchBaseOptions<TRouter, TFrom, TStrict, TThrow, TSelected>
 
-export type UseParamsRoute<out TFrom> = <
+export type UseSearchRoute<out TFrom> = <
   TRouter extends AnyRouter = RegisteredRouter,
   TSelected = unknown,
 >(
-  opts?: UseParamsBaseOptions<
+  opts?: UseSearchBaseOptions<
     TRouter,
     TFrom,
     /* TStrict */ true,
     /* TThrow */ true,
     TSelected
   >,
-) => Accessor<UseParamsResult<TRouter, TFrom, true, TSelected>>
+) => UseSearchResult<TRouter, TFrom, true, TSelected>
 
-export function useParams<
+export function useSearch<
   TRouter extends AnyRouter = RegisteredRouter,
   const TFrom extends string | undefined = undefined,
   TStrict extends boolean = true,
   TThrow extends boolean = true,
   TSelected = unknown,
 >(
-  opts: UseParamsOptions<
+  opts: UseSearchOptions<
     TRouter,
     TFrom,
     TStrict,
     ThrowConstraint<TStrict, TThrow>,
     TSelected
   >,
-): Accessor<
-  ThrowOrOptional<UseParamsResult<TRouter, TFrom, TStrict, TSelected>, TThrow>
+): ThrowOrOptional<
+  UseSearchResult<TRouter, TFrom, TStrict, TSelected>,
+  TThrow
 > {
   return useMatch({
     from: opts.from!,
     strict: opts.strict,
     shouldThrow: opts.shouldThrow,
     select: (match: any) => {
-      return opts.select ? opts.select(match.params) : match.params
+      return opts.select ? opts.select(match.search) : match.search
     },
-  } as any) as any
+  }) as any
 }

@@ -1,5 +1,3 @@
-import * as Solid from 'solid-js'
-
 import { mergeRefs } from '@solid-primitives/refs'
 
 import {
@@ -9,13 +7,14 @@ import {
   preloadWarning,
   removeTrailingSlash,
 } from '@tanstack/router-core'
-import { Dynamic } from 'solid-js/web'
 import { useRouterState } from './useRouterState'
 import { useRouter } from './useRouter'
 
-import { useIntersectionObserver } from './utils'
+import { useIntersectionObserver } from './utils.svelte'
 
-import { useMatches } from './Matches'
+import { useMatches } from './matches.svelte'
+import { linkSnippet } from './LinkComponent.svelte'
+import type { Snippet } from 'svelte'
 import type {
   AnyRouter,
   Constrain,
@@ -28,6 +27,7 @@ import type {
   ValidateLinkOptions,
   ValidateLinkOptionsArray,
 } from './typePrimitives'
+import type { HTMLAnchorAttributes, HTMLAttributes } from 'svelte/elements'
 
 export function useLinkProps<
   TRouter extends AnyRouter = RegisteredRouter,
@@ -37,9 +37,9 @@ export function useLinkProps<
   TMaskTo extends string = '',
 >(
   options: UseLinkPropsOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo>,
-): Solid.ComponentProps<'a'> {
+): HTMLAnchorAttributes {
   const router = useRouter()
-  const [isTransitioning, setIsTransitioning] = Solid.createSignal(false)
+  let isTransitioning = $state(false)
   let hasRenderFetched = false
 
   const [local, rest] = Solid.splitProps(
@@ -121,13 +121,13 @@ export function useLinkProps<
   // If this `to` is a valid external URL, return
   // null for LinkUtils
 
-  const type: Solid.Accessor<'internal' | 'external'> = () => {
+  const type: 'internal' | 'external' = (() => {
     try {
       new URL(`${local.to}`)
       return 'external'
     } catch {}
     return 'internal'
-  }
+  })()
 
   const currentSearch = useRouterState({
     select: (s) => s.location.searchStr,
@@ -144,12 +144,12 @@ export function useLinkProps<
     from: from(),
   })
 
-  const next = Solid.createMemo(() => {
-    currentSearch()
+  const next = $derived.by(() => {
+    currentSearch
     return router.buildLocation(_options() as any)
   })
 
-  const preload = Solid.createMemo(() => {
+  const preload = $derived.by(() => {
     if (_options().reloadDocument) {
       return false
     }
@@ -163,7 +163,7 @@ export function useLinkProps<
       if (local.activeOptions?.exact) {
         const testExact = exactPathTest(
           s.location.pathname,
-          next().pathname,
+          next.pathname,
           router.basepath,
         )
         if (!testExact) {
@@ -175,7 +175,7 @@ export function useLinkProps<
           router.basepath,
         ).split('/')
         const nextPathSplit = removeTrailingSlash(
-          next()?.pathname,
+          next?.pathname,
           router.basepath,
         )?.split('/')
 
@@ -188,7 +188,7 @@ export function useLinkProps<
       }
 
       if (local.activeOptions?.includeSearch ?? true) {
-        const searchTest = deepEqual(s.location.search, next().search, {
+        const searchTest = deepEqual(s.location.search, next.search, {
           partial: !local.activeOptions?.exact,
           ignoreUndefined: !local.activeOptions?.explicitUndefined,
         })
@@ -198,7 +198,7 @@ export function useLinkProps<
       }
 
       if (local.activeOptions?.includeHash) {
-        return s.location.hash === next().hash
+        return s.location.hash === next.hash
       }
       return true
     },
@@ -218,32 +218,32 @@ export function useLinkProps<
     }
   }
 
-  const [ref, setRef] = Solid.createSignal<Element | null>(null)
+  const ref = $state<Element | null>(null)
 
   useIntersectionObserver(
     ref,
     preloadViewportIoCallback,
     { rootMargin: '100px' },
-    { disabled: !!local.disabled || !(preload() === 'viewport') },
+    { disabled: !!local.disabled || !(preload === 'viewport') },
   )
 
-  Solid.createEffect(() => {
+  $effect(() => {
     if (hasRenderFetched) {
       return
     }
-    if (!local.disabled && preload() === 'render') {
+    if (!local.disabled && preload === 'render') {
       doPreload()
       hasRenderFetched = true
     }
   })
 
-  if (type() === 'external') {
+  if (type === 'external') {
     return Solid.mergeProps(
       propsSafeToSpread,
       {
         ref,
         get type() {
-          return type()
+          return type
         },
         get href() {
           return local.to
@@ -277,11 +277,11 @@ export function useLinkProps<
     ) {
       e.preventDefault()
 
-      setIsTransitioning(true)
+      isTransitioning = true
 
       const unsub = router.subscribe('onResolved', () => {
         unsub()
-        setIsTransitioning(false)
+        isTransitioning = false
       })
 
       // All is well? Navigate!
@@ -301,7 +301,7 @@ export function useLinkProps<
   // The click handler
   const handleFocus = (_: MouseEvent) => {
     if (local.disabled) return
-    if (preload()) {
+    if (preload) {
       doPreload()
     }
   }
@@ -312,7 +312,7 @@ export function useLinkProps<
     if (local.disabled) return
     const eventTarget = (e.target || {}) as LinkCurrentTargetElement
 
-    if (preload()) {
+    if (preload) {
       if (eventTarget.preloadTimeout) {
         return
       }
@@ -361,31 +361,31 @@ export function useLinkProps<
   }
 
   // Get the active props
-  const resolvedActiveProps: () => Omit<Solid.ComponentProps<'a'>, 'style'> & {
-    style?: Solid.JSX.CSSProperties
-  } = () =>
-    isActive() ? (functionalUpdate(local.activeProps as any, {}) ?? {}) : {}
+  const resolvedActiveProps: HTMLAnchorAttributes = isActive
+    ? (functionalUpdate(local.activeProps as any, {}) ?? {})
+    : {}
 
   // Get the inactive props
-  const resolvedInactiveProps: () => Omit<
-    Solid.ComponentProps<'a'>,
-    'style'
-  > & { style?: Solid.JSX.CSSProperties } = () =>
-    isActive() ? {} : functionalUpdate(local.inactiveProps, {})
+  const resolvedInactiveProps: HTMLAnchorAttributes = isActive
+    ? {}
+    : functionalUpdate(local.inactiveProps, {})
 
-  const resolvedClassName = () =>
-    [local.class, resolvedActiveProps().class, resolvedInactiveProps().class]
-      .filter(Boolean)
-      .join(' ')
+  const resolvedClassName = [
+    local.class,
+    resolvedActiveProps.class,
+    resolvedInactiveProps.class,
+  ]
+    .filter(Boolean)
+    .join(' ')
 
-  const resolvedStyle = () => ({
+  const resolvedStyle = {
     ...local.style,
-    ...resolvedActiveProps().style,
-    ...resolvedInactiveProps().style,
-  })
+    ...resolvedActiveProps.style,
+    ...resolvedInactiveProps.style,
+  }
 
-  const href = Solid.createMemo(() => {
-    const nextLocation = next()
+  const href = $derived.by(() => {
+    const nextLocation = next
     const maskedLocation = nextLocation?.maskedLocation
 
     return _options().disabled
@@ -402,7 +402,7 @@ export function useLinkProps<
     () => {
       return {
         href: href(),
-        ref: mergeRefs(setRef, _options().ref),
+        ref: mergeRefs(ref, _options().ref),
         onClick: composeEventHandlers([local.onClick, handleClick]),
         onFocus: composeEventHandlers([local.onFocus, handleFocus]),
         onMouseEnter: composeEventHandlers([local.onMouseEnter, handleEnter]),
@@ -416,13 +416,13 @@ export function useLinkProps<
         disabled: !!local.disabled,
         target: local.target,
         ...(Object.keys(resolvedStyle).length && { style: resolvedStyle }),
-        ...(resolvedClassName() && { class: resolvedClassName() }),
+        ...(resolvedClassName && { class: resolvedClassName }),
         ...(local.disabled && {
           role: 'link',
           'aria-disabled': true,
         }),
-        ...(isActive() && { 'data-status': 'active', 'aria-current': 'page' }),
-        ...(isTransitioning() && { 'data-transitioning': 'transitioning' }),
+        ...(isActive && { 'data-status': 'active', 'aria-current': 'page' }),
+        ...(isTransitioning && { 'data-transitioning': 'transitioning' }),
       }
     },
   ) as any
@@ -435,7 +435,7 @@ export type UseLinkPropsOptions<
   TMaskFrom extends RoutePaths<TRouter['routeTree']> | string = TFrom,
   TMaskTo extends string = '.',
 > = ActiveLinkOptions<'a', TRouter, TFrom, TTo, TMaskFrom, TMaskTo> &
-  Omit<Solid.ComponentProps<'a'>, 'style'> & { style?: Solid.JSX.CSSProperties }
+  HTMLAnchorAttributes
 
 export type ActiveLinkOptions<
   TComp = 'a',
@@ -479,15 +479,19 @@ export type LinkProps<
 export interface LinkPropsChildren {
   // If a function is passed as a child, it will be given the `isActive` boolean to aid in further styling on the element it returns
   children?:
-    | Solid.JSX.Element
-    | ((state: {
-        isActive: boolean
-        isTransitioning: boolean
-      }) => Solid.JSX.Element)
+    | Snippet
+    | Snippet<
+        [
+          {
+            isActive: boolean
+            isTransitioning: boolean
+          },
+        ]
+      >
 }
 
-type LinkComponentSolidProps<TComp> = TComp extends Solid.ValidComponent
-  ? Omit<Solid.ComponentProps<TComp>, keyof CreateLinkProps>
+type LinkComponentSolidProps<TComp> = TComp extends HTMLBaseElement
+  ? Omit<HTMLAttributes<TComp>, keyof CreateLinkProps>
   : never
 
 export type LinkComponentProps<
@@ -517,36 +521,14 @@ export type LinkComponent<TComp> = <
   const TMaskTo extends string = '',
 >(
   props: LinkComponentProps<TComp, TRouter, TFrom, TTo, TMaskFrom, TMaskTo>,
-) => Solid.JSX.Element
+) => Snippet<
+  [LinkComponentProps<TComp, TRouter, TFrom, TTo, TMaskFrom, TMaskTo>]
+>
 
 export function createLink<const TComp>(
-  Comp: Constrain<TComp, any, (props: CreateLinkProps) => Solid.JSX.Element>,
+  Comp: Constrain<TComp, any, Snippet<[CreateLinkProps]>>,
 ): LinkComponent<TComp> {
-  return (props) => <Link {...(props as any)} _asChild={Comp} />
-}
-
-export const Link: LinkComponent<'a'> = (props: any) => {
-  const [local, rest] = Solid.splitProps(props, ['_asChild'])
-
-  const [_, linkProps] = Solid.splitProps(
-    useLinkProps(rest as unknown as any),
-    ['type', 'children'],
-  )
-
-  const children = () =>
-    typeof rest.children === 'function'
-      ? rest.children({
-          get isActive() {
-            return (linkProps as any)['data-status'] === 'active'
-          },
-        })
-      : rest.children
-
-  return (
-    <Dynamic component={local._asChild ? local._asChild : 'a'} {...linkProps}>
-      {children}
-    </Dynamic>
-  )
+  return (props) => linkSnippet({ ...props, _asChild: Comp })
 }
 
 function isCtrlEvent(e: MouseEvent) {

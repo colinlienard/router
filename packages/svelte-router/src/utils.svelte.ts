@@ -1,10 +1,9 @@
-import * as Solid from 'solid-js'
-
 export const useLayoutEffect =
   typeof window !== 'undefined' ? Solid.createRenderEffect : Solid.createEffect
 
 export const usePrevious = (fn: () => boolean) => {
-  return Solid.createMemo(
+  // TODO: no previous in svelte
+  return $derived.by(
     (
       prev: { current: boolean | null; previous: boolean | null } = {
         current: null,
@@ -49,18 +48,17 @@ export const usePrevious = (fn: () => boolean) => {
  * ```
  */
 export function useIntersectionObserver<T extends Element>(
-  ref: Solid.Accessor<T | null>,
+  ref: T | null,
   callback: (entry: IntersectionObserverEntry | undefined) => void,
   intersectionObserverOptions: IntersectionObserverInit = {},
   options: { disabled?: boolean } = {},
-): Solid.Accessor<IntersectionObserver | null> {
+): IntersectionObserver | null {
   const isIntersectionObserverAvailable =
     typeof IntersectionObserver === 'function'
   let observerRef: IntersectionObserver | null = null
 
-  Solid.createEffect(() => {
-    const r = ref()
-    if (!r || !isIntersectionObserverAvailable || options.disabled) {
+  $effect(() => {
+    if (!ref || !isIntersectionObserverAvailable || options.disabled) {
       return
     }
 
@@ -68,12 +66,12 @@ export function useIntersectionObserver<T extends Element>(
       callback(entry)
     }, intersectionObserverOptions)
 
-    observerRef.observe(r)
+    observerRef.observe(ref)
 
-    Solid.onCleanup(() => {
+    return () => {
       observerRef?.disconnect()
-    })
+    }
   })
 
-  return () => observerRef
+  return observerRef
 }

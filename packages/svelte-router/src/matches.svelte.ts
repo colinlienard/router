@@ -1,13 +1,7 @@
-import * as Solid from 'solid-js'
-import warning from 'tiny-warning'
-import CatchBoundary from './CatchBoundary.svelte'
-import ErrorComponent from './ErrorComponent.svelte'
 import { useRouterState } from './useRouterState'
 import { useRouter } from './useRouter'
-import { Transitioner } from './Transitioner'
 import { getMatchContext } from './matchContext'
-import { Match } from './Match'
-import { SafeFragment } from './SafeFragment'
+import type { Snippet } from 'svelte'
 import type {
   AnyRouter,
   DeepPartial,
@@ -27,68 +21,11 @@ import type {
 
 declare module '@tanstack/router-core' {
   export interface RouteMatchExtensions {
-    meta?: Array<Solid.JSX.IntrinsicElements['meta'] | undefined>
-    links?: Array<Solid.JSX.IntrinsicElements['link'] | undefined>
-    scripts?: Array<Solid.JSX.IntrinsicElements['script'] | undefined>
-    headScripts?: Array<Solid.JSX.IntrinsicElements['script'] | undefined>
+    meta?: Array<HTMLMetaElement | undefined>
+    links?: Array<HTMLLinkElement | undefined>
+    scripts?: Array<HTMLScriptElement | undefined>
+    headScripts?: Array<HTMLScriptElement | undefined>
   }
-}
-
-export function Matches() {
-  const router = useRouter()
-
-  const pendingElement = router.options.defaultPendingComponent ? (
-    <router.options.defaultPendingComponent />
-  ) : null
-
-  // Do not render a root Suspense during SSR or hydrating from SSR
-  const ResolvedSuspense =
-    router.isServer || (typeof document !== 'undefined' && router.clientSsr)
-      ? SafeFragment
-      : Solid.Suspense
-
-  const inner = (
-    <ResolvedSuspense fallback={pendingElement}>
-      <Transitioner />
-      <MatchesInner />
-    </ResolvedSuspense>
-  )
-
-  return router.options.InnerWrap ? (
-    <router.options.InnerWrap>{inner}</router.options.InnerWrap>
-  ) : (
-    inner
-  )
-}
-
-function MatchesInner() {
-  const matchId = useRouterState({
-    select: (s) => {
-      return s.matches[0]?.id
-    },
-  })
-
-  const resetKey = useRouterState({
-    select: (s) => s.loadedAt,
-  })
-
-  return (
-    <matchContext.Provider value={matchId}>
-      <CatchBoundary
-        getResetKey={() => resetKey()}
-        errorComponent={ErrorComponent}
-        onCatch={(error) => {
-          warning(
-            false,
-            `The following error wasn't caught by any route! At the very least, consider setting an 'errorComponent' in your RootRoute!`,
-          )
-          warning(false, error.message || error.toString())
-        }}
-      >
-        {matchId() ? <Match matchId={matchId()} /> : null}
-      </CatchBoundary>
-    </matchContext.Provider>
-  )
 }
 
 export type UseMatchRouteOptions<
@@ -117,13 +54,11 @@ export function useMatchRoute<TRouter extends AnyRouter = RegisteredRouter>() {
     const TMaskTo extends string = '',
   >(
     opts: UseMatchRouteOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo>,
-  ): Solid.Accessor<
-    false | ResolveRoute<TRouter, TFrom, TTo>['types']['allParams']
-  > => {
+  ): false | ResolveRoute<TRouter, TFrom, TTo>['types']['allParams'] => {
     const { pending, caseSensitive, fuzzy, includeSearch, ...rest } = opts
 
-    const matchRoute = Solid.createMemo(() => {
-      status()
+    const matchRoute = $derived.by(() => {
+      status
       return router.matchRoute(rest as any, {
         pending,
         caseSensitive,
@@ -145,40 +80,15 @@ export type MakeMatchRouteOptions<
 > = UseMatchRouteOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo> & {
   // If a function is passed as a child, it will be given the `isActive` boolean to aid in further styling on the element it returns
   children?:
-    | ((
-        params?: RouteByPath<
-          TRouter['routeTree'],
-          ResolveRelativePath<TFrom, NoInfer<TTo>>
-        >['types']['allParams'],
-      ) => Solid.JSX.Element)
-    | Solid.JSX.Element
-}
-
-export function MatchRoute<
-  TRouter extends AnyRouter = RegisteredRouter,
-  const TFrom extends string = string,
-  const TTo extends string | undefined = undefined,
-  const TMaskFrom extends string = TFrom,
-  const TMaskTo extends string = '',
->(props: MakeMatchRouteOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo>): any {
-  const status = useRouterState({
-    select: (s) => s.status,
-  })
-
-  return (
-    <Solid.Show when={status()} keyed>
-      {(_) => {
-        const matchRoute = useMatchRoute()
-        const params = matchRoute(props as any)() as boolean
-
-        if (typeof props.children === 'function') {
-          return (props.children as any)(params)
-        }
-
-        return params ? props.children : null
-      }}
-    </Solid.Show>
-  )
+    | Snippet<
+        [
+          RouteByPath<
+            TRouter['routeTree'],
+            ResolveRelativePath<TFrom, NoInfer<TTo>>
+          >['types']['allParams'],
+        ]
+      >
+    | Snippet
 }
 
 export interface UseMatchesBaseOptions<TRouter extends AnyRouter, TSelected> {
@@ -195,7 +105,7 @@ export function useMatches<
   TSelected = unknown,
 >(
   opts?: UseMatchesBaseOptions<TRouter, TSelected>,
-): Solid.Accessor<UseMatchesResult<TRouter, TSelected>> {
+): UseMatchesResult<TRouter, TSelected> {
   return useRouterState({
     select: (state: RouterState<TRouter['routeTree']>) => {
       const matches = state.matches
@@ -211,7 +121,7 @@ export function useParentMatches<
   TSelected = unknown,
 >(
   opts?: UseMatchesBaseOptions<TRouter, TSelected>,
-): Solid.Accessor<UseMatchesResult<TRouter, TSelected>> {
+): UseMatchesResult<TRouter, TSelected> {
   const contextMatchId = getMatchContext()
 
   return useMatches({
@@ -230,7 +140,7 @@ export function useChildMatches<
   TSelected = unknown,
 >(
   opts?: UseMatchesBaseOptions<TRouter, TSelected>,
-): Solid.Accessor<UseMatchesResult<TRouter, TSelected>> {
+): UseMatchesResult<TRouter, TSelected> {
   const contextMatchId = getMatchContext()
 
   return useMatches({

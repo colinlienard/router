@@ -1,4 +1,4 @@
-import * as Solid from 'solid-js'
+import { onMount } from 'svelte'
 import { useRouter } from './useRouter'
 import type {
   AnyRouter,
@@ -30,7 +30,7 @@ export function Navigate<
 >(props: NavigateOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo>): null {
   const { navigate } = useRouter()
 
-  Solid.onMount(() => {
+  onMount(() => {
     navigate({
       ...props,
     })

@@ -35,22 +35,21 @@
     `Could not find routeId for matchId "${props.matchId}". Please file an issue!`,
   )
 
-  const route: () => AnyRoute = () => router.routesById[routeId]
+  const route: AnyRoute = router.routesById[routeId]
 
   const PendingComponent =
-    route().options.pendingComponent ?? router.options.defaultPendingComponent
+    route.options.pendingComponent ?? router.options.defaultPendingComponent
 
   const routeErrorComponent =
-    route().options.errorComponent ?? router.options.defaultErrorComponent
+    route.options.errorComponent ?? router.options.defaultErrorComponent
 
-  const routeOnCatch = () =>
-    route().options.onCatch ?? router.options.defaultOnCatch
+  const routeOnCatch = route.options.onCatch ?? router.options.defaultOnCatch
 
-  const routeNotFoundComponent = route().isRoot
+  const routeNotFoundComponent = route.isRoot
     ? // If it's the root route, use the globalNotFound option, with fallback to the notFoundRoute's component
-      (route().options.notFoundComponent ??
+      (route.options.notFoundComponent ??
       router.options.notFoundRoute?.options.component)
-    : route().options.notFoundComponent
+    : route.options.notFoundComponent
 
   const ResolvedCatchBoundary = routeErrorComponent
     ? CatchBoundary
@@ -97,7 +96,7 @@
   if (matchState.match.status === 'pending') {
     pending = true
     const pendingMinMs =
-      route().options.pendingMinMs ?? router.options.defaultPendingMinMs
+      route.options.pendingMinMs ?? router.options.defaultPendingMinMs
 
     if (
       pendingMinMs &&
@@ -140,7 +139,7 @@
       // Forward not found errors (we don't want to show the error component for these)
       if (isNotFound(error)) throw error
       warning(false, `Error in route match: ${props.matchId}`)
-      routeOnCatch()?.(error)
+      routeOnCatch?.(error)
     }}
   >
     <ResolvedNotFoundBoundary>

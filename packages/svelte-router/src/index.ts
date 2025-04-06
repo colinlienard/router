@@ -243,7 +243,8 @@ export * from './history'
 
 export { lazyRouteComponent } from './lazyRouteComponent'
 
-export { useLinkProps, createLink, Link, linkOptions } from './link'
+export { useLinkProps, createLink, linkOptions } from './link.svelte'
+export { default as Link } from './LinkComponent.svelte'
 export type {
   UseLinkPropsOptions,
   ActiveLinkOptions,
@@ -251,21 +252,25 @@ export type {
   LinkComponent,
   LinkComponentProps,
   CreateLinkProps,
-} from './link'
+} from './link.svelte'
 
 export {
   Matches,
   useMatchRoute,
-  MatchRoute,
   useMatches,
   useParentMatches,
   useChildMatches,
-} from './Matches'
+} from './matches.svelte'
+export { default as MatchRouter } from './MatchRoute.svelte'
 
-export type { UseMatchRouteOptions, MakeMatchRouteOptions } from './Matches'
+export type {
+  UseMatchRouteOptions,
+  MakeMatchRouteOptions,
+} from './matches.svelte'
 
-export { matchContext } from './matchContext'
-export { Match, Outlet } from './Match'
+export { getMatchContext } from './matchContext'
+export { default as Match } from './Match.svelte'
+export { default as Outlet } from './Outlet.svelte'
 
 export { useMatch } from './useMatch'
 export { useLoaderDeps } from './useLoaderDeps'
@@ -310,8 +315,8 @@ export type { RouterProps } from './RouterProvider'
 
 export {
   useElementScrollRestoration,
-  ScrollRestoration,
-} from './ScrollRestoration'
+  default as ScrollRestoration,
+} from './ScrollRestoration.svelte'
 
 export type { UseBlockerOpts, ShouldBlockFn } from './useBlocker'
 export { useBlocker, Block } from './useBlocker'
@@ -331,9 +336,10 @@ export { useRouterState } from './useRouterState'
 export { useLocation } from './useLocation'
 export { useCanGoBack } from './useCanGoBack'
 
-export { useLayoutEffect } from './utils'
+export { useLayoutEffect } from './utils.svelte'
 
-export { CatchNotFound, DefaultGlobalNotFound } from './not-found'
+export { default as CatchNotFound } from './CatchNotFound.svelte'
+export { default as DefaultGlobalNotFound } from './DefaultGlobalNotFound.svelte'
 export { notFound, isNotFound } from '@tanstack/router-core'
 export type { NotFoundError } from '@tanstack/router-core'
 
@@ -365,8 +371,8 @@ export type {
   ValidateUseParamsResult,
 } from '@tanstack/router-core'
 
-export { ScriptOnce } from './ScriptOnce'
+export { default as ScriptOnce } from './ScriptOnce.svelte'
 
-export { Asset } from './Asset'
-export { HeadContent, useTags } from './HeadContent'
-export { Scripts } from './Scripts'
+export { default as Asset } from './Asset.svelte'
+export { default as HeadContent, useTags } from './HeadContent.svelte'
+export { default as Scripts } from './Scripts.svelte'

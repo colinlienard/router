@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { AnyRoute, AnyRouter } from '@tanstack/router-core'
   import warning from 'tiny-warning'
+  import DefaultGlobalNotFound from './DefaultGlobalNotFound.svelte'
 
   let props: { router: AnyRouter; route: AnyRoute; data: any } = $props()
 
@@ -20,7 +21,7 @@
   {#if props.router.options.defaultNotFoundComponent}
     {@render props.router.options.defaultNotFoundComponent(props.data)}
   {:else}
-    <p>Not Found</p>
+    <DefaultGlobalNotFound />
   {/if}
 {:else}
   {@render props.route.options.notFoundComponent(props.data)}

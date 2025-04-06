@@ -1,5 +1,4 @@
 import { useMatch } from './useMatch'
-import type { Accessor } from 'solid-js'
 import type {
   AnyRouter,
   RegisteredRouter,
@@ -30,7 +29,7 @@ export type UseLoaderDataRoute<out TId> = <
   TSelected = unknown,
 >(
   opts?: UseLoaderDataBaseOptions<TRouter, TId, true, TSelected>,
-) => Accessor<UseLoaderDataResult<TRouter, TId, true, TSelected>>
+) => UseLoaderDataResult<TRouter, TId, true, TSelected>
 
 export function useLoaderData<
   TRouter extends AnyRouter = RegisteredRouter,
@@ -39,7 +38,7 @@ export function useLoaderData<
   TSelected = unknown,
 >(
   opts: UseLoaderDataOptions<TRouter, TFrom, TStrict, TSelected>,
-): Accessor<UseLoaderDataResult<TRouter, TFrom, TStrict, TSelected>> {
+): UseLoaderDataResult<TRouter, TFrom, TStrict, TSelected> {
   return useMatch({
     from: opts.from!,
     strict: opts.strict,
