@@ -241,7 +241,7 @@ export {
 
 export * from './history'
 
-export { lazyRouteComponent } from './lazyRouteComponent'
+export { lazyRouteComponent } from './lazyRouteComponent.svelte'
 
 export { useLinkProps, createLink, linkOptions } from './link.svelte'
 export { default as Link } from './LinkComponent.svelte'
@@ -254,8 +254,8 @@ export type {
   CreateLinkProps,
 } from './link.svelte'
 
+export { default as Matches } from './MatchesComponent.svelte'
 export {
-  Matches,
   useMatchRoute,
   useMatches,
   useParentMatches,
@@ -310,16 +310,17 @@ export {
   getInitialRouterState,
 } from '@tanstack/router-core'
 
-export { RouterProvider, RouterContextProvider } from './RouterProvider'
-export type { RouterProps } from './RouterProvider'
+export { default as RouterProvider } from './RouterProvider.svelte'
+export type { RouterProps } from './RouterProvider.svelte'
 
 export {
   useElementScrollRestoration,
   default as ScrollRestoration,
 } from './ScrollRestoration.svelte'
 
-export type { UseBlockerOpts, ShouldBlockFn } from './useBlocker'
-export { useBlocker, Block } from './useBlocker'
+export type { UseBlockerOpts, ShouldBlockFn } from './useBlocker.svelte'
+export { default as Block } from './Block.svelte'
+export { useBlocker } from './useBlocker.svelte'
 
 export { useNavigate, Navigate } from './useNavigate'
 

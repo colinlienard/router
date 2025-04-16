@@ -1,11 +1,10 @@
-import * as Solid from 'solid-js'
 import { useRouter } from './useRouter'
+import type { Snippet } from 'svelte'
 import type {
   BlockerFnArgs,
   HistoryAction,
   HistoryLocation,
 } from '@tanstack/history'
-import type { SolidNode } from './route'
 import type {
   AnyRoute,
   AnyRouter,
@@ -134,14 +133,12 @@ export function useBlocker<
   TWithResolver extends boolean = false,
 >(
   opts: UseBlockerOpts<TRouter, TWithResolver>,
-): TWithResolver extends true ? Solid.Accessor<BlockerResolver<TRouter>> : void
+): TWithResolver extends true ? BlockerResolver<TRouter> : void
 
 /**
  * @deprecated Use the shouldBlockFn property instead
  */
-export function useBlocker(
-  blockerFnOrOpts?: LegacyBlockerOpts,
-): Solid.Accessor<BlockerResolver>
+export function useBlocker(blockerFnOrOpts?: LegacyBlockerOpts): BlockerResolver
 
 /**
  * @deprecated Use the UseBlockerOpts object syntax instead
@@ -149,12 +146,12 @@ export function useBlocker(
 export function useBlocker(
   blockerFn?: LegacyBlockerFn,
   condition?: boolean | any,
-): Solid.Accessor<BlockerResolver>
+): BlockerResolver
 
 export function useBlocker(
   opts?: UseBlockerOpts | LegacyBlockerOpts | LegacyBlockerFn,
   condition?: boolean | any,
-): Solid.Accessor<BlockerResolver> | void {
+): BlockerResolver | void {
   const {
     shouldBlockFn,
     enableBeforeUnload = true,
@@ -165,7 +162,7 @@ export function useBlocker(
   const router = useRouter()
   const { history } = router
 
-  const [resolver, setResolver] = Solid.createSignal<BlockerResolver>({
+  let resolver = $state<BlockerResolver>({
     status: 'idle',
     current: undefined,
     next: undefined,
@@ -174,7 +171,7 @@ export function useBlocker(
     reset: undefined,
   })
 
-  Solid.createEffect(() => {
+  $effect(() => {
     const blockerFnComposed = async (blockerFnArgs: BlockerFnArgs) => {
       function getLocation(
         location: HistoryLocation,
@@ -210,25 +207,25 @@ export function useBlocker(
       }
 
       const promise = new Promise<boolean>((resolve) => {
-        setResolver({
+        resolver = {
           status: 'blocked',
           current,
           next,
           action: blockerFnArgs.action,
           proceed: () => resolve(false),
           reset: () => resolve(true),
-        })
+        }
       })
 
       const canNavigateAsync = await promise
-      setResolver({
+      resolver = {
         status: 'idle',
         current: undefined,
         next: undefined,
         action: undefined,
         proceed: undefined,
         reset: undefined,
-      })
+      }
 
       return canNavigateAsync
     }
@@ -241,7 +238,7 @@ export function useBlocker(
   return resolver
 }
 
-const _resolvePromptBlockerArgs = (
+export const _resolvePromptBlockerArgs = (
   props: PromptProps | LegacyPromptProps,
 ): UseBlockerOpts => {
   if ('shouldBlockFn' in props) {
@@ -265,38 +262,16 @@ const _resolvePromptBlockerArgs = (
   }
 }
 
-export function Block<
-  TRouter extends AnyRouter = RegisteredRouter,
-  TWithResolver extends boolean = boolean,
->(opts: PromptProps<TRouter, TWithResolver>): SolidNode
-
-/**
- *  @deprecated Use the UseBlockerOpts property instead
- */
-export function Block(opts: LegacyPromptProps): SolidNode
-
-export function Block(opts: PromptProps | LegacyPromptProps): SolidNode {
-  const { children, ...rest } = opts
-  const args = _resolvePromptBlockerArgs(rest)
-
-  const resolver = useBlocker(args)
-  return children
-    ? typeof children === 'function'
-      ? children(resolver as any)
-      : children
-    : null
-}
-
 type LegacyPromptProps = {
   blockerFn?: LegacyBlockerFn
   condition?: boolean | any
-  children?: SolidNode | ((params: BlockerResolver) => SolidNode)
+  children?: Snippet | Snippet<[BlockerResolver]>
 }
 
-type PromptProps<
+export type PromptProps<
   TRouter extends AnyRouter = RegisteredRouter,
   TWithResolver extends boolean = boolean,
   TParams = TWithResolver extends true ? BlockerResolver<TRouter> : void,
 > = UseBlockerOpts<TRouter, TWithResolver> & {
-  children?: SolidNode | ((params: TParams) => SolidNode)
+  children?: Snippet | Snippet<[TParams]>
 }

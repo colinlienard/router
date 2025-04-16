@@ -426,8 +426,6 @@ export function createRouteMask<
   return opts as any
 }
 
-export type SolidNode = Solid.JSX.Element
-
 export type SyncRouteComponent<TProps> = Snippet<[TProps]>
 
 export type AsyncRouteComponent<TProps> = SyncRouteComponent<TProps> & {
