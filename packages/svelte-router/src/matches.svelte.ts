@@ -106,6 +106,7 @@ export function useMatches<
 >(
   opts?: UseMatchesBaseOptions<TRouter, TSelected>,
 ): UseMatchesResult<TRouter, TSelected> {
+  // @ts-expect-error TODO: fix
   return useRouterState({
     select: (state: RouterState<TRouter['routeTree']>) => {
       const matches = state.matches

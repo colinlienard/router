@@ -40,7 +40,6 @@ import type { UseMatchRoute } from './useMatch'
 import type { UseLoaderDepsRoute } from './useLoaderDeps'
 import type { UseParamsRoute } from './useParams'
 import type { UseSearchRoute } from './useSearch'
-import type * as Solid from 'solid-js'
 import type { UseRouteContextRoute } from './useRouteContext'
 
 declare module '@tanstack/router-core' {

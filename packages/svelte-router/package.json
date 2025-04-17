@@ -1,6 +1,6 @@
 {
   "name": "@tanstack/svelte-router",
-  "version": "1.114.26",
+  "version": "0.1.0",
   "description": "Modern and scalable routing for Svelte applications",
   "author": "Tanner Linsley",
   "license": "MIT",
@@ -48,7 +48,7 @@
     ".": {
       "svelte": {
         "types": "./dist/source/index.d.ts",
-        "default": "./dist/source/index.jsx"
+        "default": "./dist/source/index.js"
       },
       "import": {
         "types": "./dist/esm/index.d.ts",

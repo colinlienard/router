@@ -6,7 +6,7 @@ import {
   render,
   screen,
   waitFor,
-} from '@solidjs/testing-library'
+} from '@testing-library/svelte'
 
 import { z } from 'zod'
 import {

@@ -1,4 +1,4 @@
-import { render } from '@solidjs/testing-library'
+import { render } from '@testing-library/svelte'
 import { bench, describe } from 'vitest'
 import {
   Link,
@@ -11,15 +11,15 @@ import {
   useRouter,
 } from '../src'
 import type { LinkProps } from '../src'
-import type * as Solid from 'solid-js'
+import { Snippet } from 'svelte'
 
 const createRouterRenderer =
-  (routesCount: number) => (children: Solid.JSX.Element) => {
+  (routesCount: number) => (children: Snippet) => {
     const rootRoute = createRootRoute()
     const indexRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: '/',
-      component: () => children,
+      component: children,
     })
     const paramRoutes = Array.from({ length: routesCount }).map((_, i) =>
       createRoute({

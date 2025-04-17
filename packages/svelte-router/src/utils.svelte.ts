@@ -1,9 +1,5 @@
-export const useLayoutEffect =
-  typeof window !== 'undefined' ? Solid.createRenderEffect : Solid.createEffect
-
 export const usePrevious = (current: boolean) => {
-  // TODO: no previous in svelte
-  return $derived.by(
+  const result = $derived.by(
     (
       prev: { current: boolean | null; previous: boolean | null } = {
         current: null,
@@ -18,6 +14,7 @@ export const usePrevious = (current: boolean) => {
       return prev
     },
   )
+  return result
 }
 
 /**

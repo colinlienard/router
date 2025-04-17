@@ -1,5 +1,5 @@
 import { expect, test } from 'vitest'
-import { fireEvent, render, screen } from '@solidjs/testing-library'
+import { fireEvent, render, screen } from '@testing-library/svelte'
 import {
   Link,
   Outlet,

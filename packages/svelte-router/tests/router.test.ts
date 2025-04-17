@@ -5,8 +5,9 @@ import {
   render,
   screen,
   waitFor,
-} from '@solidjs/testing-library'
+} from '@testing-library/svelte'
 import { z } from 'zod'
+import { createRawSnippet, mount } from 'svelte'
 import {
   Link,
   Outlet,
@@ -50,15 +51,14 @@ export function validateSearchParams<
 function createTestRouter(options?: RouterOptions<AnyRoute, 'never'>) {
   const rootRoute = createRootRoute({
     validateSearch: z.object({ root: z.string().optional() }),
-    component: () => {
-      const search = rootRoute.useSearch()
-      return (
-        <>
-          <div data-testid="search-root">{search().root ?? '$undefined'}</div>
-          <Outlet />
-        </>
-      )
-    },
+    component: createRawSnippet(() => ({
+      render: () => `<div></div>`,
+      setup(target) {
+        const search = rootRoute.useSearch()
+        target.innerHTML = `<div data-testid="search-root">${search.root ?? '$undefined'}</div>`
+        mount(Outlet, { target })
+      },
+    })),
   })
   const indexRoute = createRoute({ getParentRoute: () => rootRoute, path: '/' })
   const usersRoute = createRoute({
@@ -163,16 +163,16 @@ function createTestRouter(options?: RouterOptions<AnyRoute, 'never'>) {
     validateSearch: z.object({ search: z.string().optional() }),
     getParentRoute: () => rootRoute,
     path: 'search',
-    component: () => {
-      const search = searchRoute.useSearch()
-      return (
-        <>
-          <div data-testid="search-search">
-            {search().search ?? '$undefined'}
-          </div>
-        </>
-      )
-    },
+    component: createRawSnippet(() => ({
+      render: () => `<div data-testid="search-search"></div>`,
+      setup(target) {
+        const search = searchRoute.useSearch()
+        const element = target.querySelector('[data-testid="search-search"]')
+        if (element) {
+          element.textContent = search().search ?? '$undefined'
+        }
+      },
+    })),
   })
   const searchWithDefaultRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -182,40 +182,68 @@ function createTestRouter(options?: RouterOptions<AnyRoute, 'never'>) {
   const searchWithDefaultIndexRoute = createRoute({
     getParentRoute: () => searchWithDefaultRoute,
     path: '/',
-    component: () => {
-      return (
-        <>
-          <Link
-            data-testid="link-without-params"
-            to="/searchWithDefault/check"
-            search={{ default: 'd1' }}
-          >
-            without params
-          </Link>
-          <Link
-            data-testid="link-with-optional-param"
-            to="/searchWithDefault/check"
-            search={{ optional: 'o1' }}
-          >
-            with optional param
-          </Link>
-          <Link
-            data-testid="link-with-default-param"
-            to="/searchWithDefault/check"
-            search={{ default: 'd2' }}
-          >
-            with default param
-          </Link>
-          <Link
-            data-testid="link-with-both-params"
-            to="/searchWithDefault/check"
-            search={{ optional: 'o1', default: 'd2' }}
-          >
-            with both params
-          </Link>
-        </>
-      )
-    },
+    component: createRawSnippet(() => ({
+      render: () => `<div>
+        <div id="link-container-1"></div>
+        <div id="link-container-2"></div>
+        <div id="link-container-3"></div>
+        <div id="link-container-4"></div>
+      </div>`,
+      setup(target) {
+        const container1 = target.querySelector('#link-container-1')
+        const container2 = target.querySelector('#link-container-2')
+        const container3 = target.querySelector('#link-container-3')
+        const container4 = target.querySelector('#link-container-4')
+
+        if (container1) {
+          mount(Link, {
+            target: container1,
+            props: {
+              'data-testid': 'link-without-params',
+              to: '/searchWithDefault/check',
+              search: { default: 'd1' },
+              children: 'without params',
+            },
+          })
+        }
+
+        if (container2) {
+          mount(Link, {
+            target: container2,
+            props: {
+              'data-testid': 'link-with-optional-param',
+              to: '/searchWithDefault/check',
+              search: { optional: 'o1' },
+              children: 'with optional param',
+            },
+          })
+        }
+
+        if (container3) {
+          mount(Link, {
+            target: container3,
+            props: {
+              'data-testid': 'link-with-default-param',
+              to: '/searchWithDefault/check',
+              search: { default: 'd2' },
+              children: 'with default param',
+            },
+          })
+        }
+
+        if (container4) {
+          mount(Link, {
+            target: container4,
+            props: {
+              'data-testid': 'link-with-both-params',
+              to: '/searchWithDefault/check',
+              search: { optional: 'o1', default: 'd2' },
+              children: 'with both params',
+            },
+          })
+        }
+      },
+    })),
   })
 
   const searchWithDefaultCheckRoute = createRoute({
@@ -225,17 +253,29 @@ function createTestRouter(options?: RouterOptions<AnyRoute, 'never'>) {
     }),
     getParentRoute: () => searchWithDefaultRoute,
     path: 'check',
-    component: () => {
-      const search = searchWithDefaultCheckRoute.useSearch()
-      return (
-        <>
-          <div data-testid="search-default">{search().default}</div>
-          <div data-testid="search-optional">
-            {search().optional ?? '$undefined'}
-          </div>
-        </>
-      )
-    },
+    component: createRawSnippet(() => ({
+      render: () => `
+        <div data-testid="search-default"></div>
+        <div data-testid="search-optional"></div>
+      `,
+      setup(target) {
+        const search = searchWithDefaultCheckRoute.useSearch()
+        const defaultElement = target.querySelector(
+          '[data-testid="search-default"]',
+        )
+        const optionalElement = target.querySelector(
+          '[data-testid="search-optional"]',
+        )
+
+        if (defaultElement) {
+          defaultElement.textContent = search().default
+        }
+
+        if (optionalElement) {
+          optionalElement.textContent = search().optional ?? '$undefined'
+        }
+      },
+    })),
   })
 
   const nestedSearchRoute = createRoute({
@@ -254,15 +294,22 @@ function createTestRouter(options?: RouterOptions<AnyRoute, 'never'>) {
     validateSearch: z.object({ search: z.string().optional() }),
     getParentRoute: () => rootRoute,
     path: 'linksToItself',
-    component: () => {
-      return (
-        <>
-          <Link to="/linksToItself" data-testid="link">
-            Click me
-          </Link>
-        </>
-      )
-    },
+    component: createRawSnippet(() => ({
+      render: () => `<div id="link-container"></div>`,
+      setup(target) {
+        const container = target.querySelector('#link-container')
+        if (container) {
+          mount(Link, {
+            target: container,
+            props: {
+              to: '/linksToItself',
+              'data-testid': 'link',
+              children: 'Click me',
+            },
+          })
+        }
+      },
+    })),
   })
 
   const routeTree = rootRoute.addChildren([
@@ -536,7 +583,7 @@ describe('encoding: URL param segment for /posts/$slug', () => {
     })
 
     await router.load()
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { router })
 
     await router.navigate({ to: '/posts/$slug', params: { slug: '@jane' } })
 
@@ -550,7 +597,7 @@ describe('encoding: URL param segment for /posts/$slug', () => {
     })
 
     await router.load()
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
 
     await router.navigate({ to: '/posts/$slug', params: { slug: '@jane' } })
 
@@ -786,7 +833,7 @@ describe('encoding: URL path segment', () => {
         history: createMemoryHistory({ initialEntries: [input] }),
       })
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
       await router.load()
 
       expect(router.state.location.pathname).toBe(output)
@@ -802,7 +849,7 @@ describe('router emits events during rendering', () => {
 
     const unsub = router.subscribe('onResolved', mockFn1)
     await router.load()
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
 
     await waitFor(() => expect(mockFn1).toBeCalled())
     unsub()
@@ -815,7 +862,7 @@ describe('router emits events during rendering', () => {
 
     const unsub = router.subscribe('onResolved', mockFn1)
     await router.load()
-    await render(() => <RouterProvider router={router} />)
+    await render(RouterProvider, { router })
     await sleep(0)
     await router.navigate({ to: '/$', params: { _splat: 'tanner' } })
 
@@ -839,7 +886,7 @@ describe('router emits events during rendering', () => {
     const unsubResolved = router.subscribe('onResolved', mockOnResolved)
 
     await router.load()
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
 
     // Ensure the "onBeforeRouteMount" event was called once
     await waitFor(() => expect(mockOnBeforeRouteMount).toBeCalledTimes(1))
@@ -1029,7 +1076,7 @@ describe('search params in URL', () => {
             `${route}?${new URLSearchParams(search as Record<string, string>).toString()}`,
           )
 
-          render(() => <RouterProvider router={router} />)
+          render(RouterProvider, { props: { router } })
           await router.load()
 
           expect(await screen.findByTestId('search-root')).toHaveTextContent(
@@ -1054,7 +1101,7 @@ describe('search params in URL', () => {
         '',
         `${route}?${new URLSearchParams(search as Record<string, string>).toString()}`,
       )
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
       await router.load()
       await expect(await screen.findByTestId('search-root')).toHaveTextContent(
         search.root ?? 'undefined',
@@ -1095,7 +1142,7 @@ describe('search params in URL', () => {
     it('should add the default search param upon initial load when no search params are present', async () => {
       window.history.replaceState(null, '', `/searchWithDefault/check`)
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
       await router.load()
 
       await checkSearch({ default: 'd1' })
@@ -1108,7 +1155,7 @@ describe('search params in URL', () => {
         `/searchWithDefault/check?default=d2`,
       )
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
       await router.load()
 
       await checkSearch({ default: 'd2' })
@@ -1121,7 +1168,7 @@ describe('search params in URL', () => {
         `/searchWithDefault/check?optional=o1`,
       )
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
       await router.load()
 
       await checkSearch({ default: 'd1', optional: 'o1' })
@@ -1134,7 +1181,8 @@ describe('search params in URL', () => {
         `/searchWithDefault/check?default=d2&optional=o1`,
       )
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
+
       await router.load()
 
       await checkSearch({ default: 'd2', optional: 'o1' })
@@ -1143,7 +1191,8 @@ describe('search params in URL', () => {
     it('should have the default search param when navigating without search params', async () => {
       window.history.replaceState(null, '', `/searchWithDefault`)
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
+
       await router.load()
       const link = await screen.findByTestId('link-without-params')
 
@@ -1156,7 +1205,8 @@ describe('search params in URL', () => {
     it('should have the default search param when navigating with the optional search param', async () => {
       window.history.replaceState(null, '', `/searchWithDefault`)
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
+
       await router.load()
       const link = await screen.findByTestId('link-with-optional-param')
 
@@ -1169,7 +1219,8 @@ describe('search params in URL', () => {
     it('should have the correct `default` search param when navigating with the `default` search param', async () => {
       window.history.replaceState(null, '', `/searchWithDefault`)
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
+
       await router.load()
       const link = await screen.findByTestId('link-with-default-param')
 
@@ -1182,7 +1233,8 @@ describe('search params in URL', () => {
     it('should have the correct search params when navigating with both search params', async () => {
       window.history.replaceState(null, '', `/searchWithDefault`)
 
-      render(() => <RouterProvider router={router} />)
+      render(RouterProvider, { props: { router } })
+
       await router.load()
       const link = await screen.findByTestId('link-with-both-params')
 
@@ -1243,17 +1295,21 @@ describe('search params in URL', () => {
         let errorSpy: Error | undefined
         const rootRoute = createRootRoute({
           validateSearch,
-          errorComponent: ({ error }) => {
-            errorSpy = error
-            return <></>
-          },
+          errorComponent: createRawSnippet(() => ({
+            render: () => ``,
+            setup(target) {
+              errorSpy = target.getAttribute('error')
+            },
+          })),
         })
 
         const history = createMemoryHistory({
           initialEntries: ['/search?search=foo'],
         })
         const router = createRouter({ routeTree: rootRoute, history })
-        render(() => <RouterProvider router={router} />)
+
+        render(RouterProvider, { props: { router } })
+
         await router.load()
 
         expect(errorSpy).toBeUndefined()
@@ -1263,15 +1319,19 @@ describe('search params in URL', () => {
         let errorSpy: Error | undefined
         const rootRoute = createRootRoute({
           validateSearch,
-          errorComponent: ({ error }) => {
-            errorSpy = error
-            return <></>
-          },
+          errorComponent: createRawSnippet(() => ({
+            render: () => ``,
+            setup(target) {
+              errorSpy = target.getAttribute('error')
+            },
+          })),
         })
 
         const history = createMemoryHistory({ initialEntries: ['/search'] })
         const router = createRouter({ routeTree: rootRoute, history })
-        render(() => <RouterProvider router={router} />)
+
+        render(RouterProvider, { props: { router } })
+
         await router.load()
 
         expect(errorSpy).toBeInstanceOf(SearchParamError)
@@ -1354,20 +1414,26 @@ describe('route id uniqueness', () => {
 const createHistoryRouter = () => {
   const rootRoute = createRootRoute()
 
-  const IndexComponent = () => {
-    const navigate = useNavigate()
+  const IndexComponent = createRawSnippet(() => ({
+    render: () => `
+      <h1>Index</h1>
+      <button class="index-button">Index</button>
+      <button class="posts-button">Posts</button>
+      <button class="replace-button">Replace</button>
+    `,
+    setup(target) {
+      const navigate = useNavigate()
+      const indexButton = target.querySelector('.index-button')
+      const postsButton = target.querySelector('.posts-button')
+      const replaceButton = target.querySelector('.replace-button')
 
-    return (
-      <>
-        <h1>Index</h1>
-        <button onClick={() => navigate({ to: '/' })}>Index</button>
-        <button onClick={() => navigate({ to: '/posts' })}>Posts</button>
-        <button onClick={() => navigate({ to: '/posts', replace: true })}>
-          Replace
-        </button>
-      </>
-    )
-  }
+      indexButton?.addEventListener('click', () => navigate({ to: '/' }))
+      postsButton?.addEventListener('click', () => navigate({ to: '/posts' }))
+      replaceButton?.addEventListener('click', () =>
+        navigate({ to: '/posts', replace: true }),
+      )
+    },
+  }))
 
   const indexRoute = createRoute({
     getParentRoute: () => rootRoute,
@@ -1378,16 +1444,17 @@ const createHistoryRouter = () => {
   const postsRoute = createRoute({
     getParentRoute: () => rootRoute,
     path: '/posts',
-    component: function Component() {
-      const navigate = useNavigate()
-
-      return (
-        <>
-          <h1>Posts</h1>
-          <button onClick={() => navigate({ to: '/' })}>Index</button>
-        </>
-      )
-    },
+    component: createRawSnippet(() => ({
+      render: () => `
+        <h1>Posts</h1>
+        <button>Index</button>
+      `,
+      setup(target) {
+        const navigate = useNavigate()
+        const button = target.querySelector('button')
+        button?.addEventListener('click', () => navigate({ to: '/' }))
+      },
+    })),
   })
 
   const router = createRouter({
@@ -1407,7 +1474,7 @@ describe('history: History gives correct notifcations and state', () => {
       Parameters<Parameters<Router['history']['subscribe']>[0]>[0]['action']
     > = []
 
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
 
     const unsub = router.history.subscribe(({ action }) => {
       results.push(action)
@@ -1445,7 +1512,7 @@ describe('history: History gives correct notifcations and state', () => {
       Parameters<Parameters<Router['history']['subscribe']>[0]>[0]['action']
     > = []
 
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
 
     const unsub = router.history.subscribe(({ action }) => {
       results.push(action)
@@ -1514,7 +1581,9 @@ it('does not push to history if url and state are the same', async () => {
   const { router } = createTestRouter({
     history,
   })
-  render(() => <RouterProvider router={router} />)
+
+  render(RouterProvider, { props: { router } })
+
   const link = await screen.findByTestId('link')
   fireEvent.click(link)
   expect(history.length).toBe(1)
@@ -1529,31 +1598,61 @@ describe('does not strip search params if search validation fails', () => {
   function getRouter() {
     const rootRoute = createRootRoute({
       validateSearch: z.object({ root: z.string() }),
-      component: () => {
-        const search = rootRoute.useSearch()
-        return (
+      component: createRawSnippet(() => ({
+        render: () => `
           <div>
-            <div data-testid="search-root">{search().root ?? '$undefined'}</div>
-            <Outlet />
+            <div data-testid="search-root"></div>
+            <div id="outlet-container"></div>
           </div>
-        )
-      },
+        `,
+        setup(target) {
+          const search = rootRoute.useSearch()
+          const rootElement = target.querySelector(
+            '[data-testid="search-root"]',
+          )
+          const outletContainer = target.querySelector('#outlet-container')
+
+          if (rootElement) {
+            rootElement.textContent = search().root ?? '$undefined'
+          }
+
+          if (outletContainer) {
+            mount(Outlet, {
+              target: outletContainer,
+            })
+          }
+        },
+      })),
     })
     const indexRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: '/',
       validateSearch: z.object({ index: z.string() }),
-      component: () => {
-        const search = rootRoute.useSearch()
-        return (
-          <>
-            <div data-testid="search-index">
-              {search().index ?? '$undefined'}
-            </div>
-            <Outlet />
-          </>
-        )
-      },
+      component: createRawSnippet(() => ({
+        render: () => `
+          <div>
+            <div data-testid="search-index"></div>
+            <div id="outlet-container"></div>
+          </div>
+        `,
+        setup(target) {
+          const search = rootRoute.useSearch()
+          const indexElement = target.querySelector(
+            '[data-testid="search-index"]',
+          )
+          const outletContainer = target.querySelector('#outlet-container')
+
+          if (indexElement) {
+            indexElement.textContent = search().index ?? '$undefined'
+          }
+
+          if (outletContainer) {
+            mount(Outlet, {
+              target: outletContainer,
+            })
+          }
+        },
+      })),
     })
 
     const routeTree = rootRoute.addChildren([indexRoute])
@@ -1566,7 +1665,8 @@ describe('does not strip search params if search validation fails', () => {
   it('smoke test - all required search params are present', async () => {
     window.history.replaceState(null, 'root', '/?root=hello&index=world')
     const router = getRouter()
-    render(() => <RouterProvider router={router} />)
+
+    render(RouterProvider, { props: { router } })
 
     expect(await screen.findByTestId('search-root')).toHaveTextContent('hello')
     expect(await screen.findByTestId('search-index')).toHaveTextContent('world')
@@ -1577,7 +1677,8 @@ describe('does not strip search params if search validation fails', () => {
   it('root is missing', async () => {
     window.history.replaceState(null, 'root', '/?index=world')
     const router = getRouter()
-    render(() => <RouterProvider router={router} />)
+
+    render(RouterProvider, { props: { router } })
 
     expect(window.location.search).toBe('?index=world')
   })
@@ -1586,7 +1687,7 @@ describe('does not strip search params if search validation fails', () => {
     window.history.replaceState(null, 'root', '/?root=hello')
     const router = getRouter()
 
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
 
     expect(window.location.search).toBe('?root=hello')
   })

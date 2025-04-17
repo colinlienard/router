@@ -1,40 +1,10 @@
-<script lang="ts" module>
-  export type RouterProps<
-    TRouter extends AnyRouter = RegisteredRouter,
-    TDehydrated extends Record<string, any> = Record<string, any>,
-  > = Omit<
-    RouterOptions<
-      TRouter['routeTree'],
-      NonNullable<TRouter['options']['trailingSlash']>,
-      false,
-      TRouter['history'],
-      TDehydrated
-    >,
-    'context'
-  > & {
-    router: TRouter
-    context?: Partial<
-      RouterOptions<
-        TRouter['routeTree'],
-        NonNullable<TRouter['options']['trailingSlash']>,
-        false,
-        TRouter['history'],
-        TDehydrated
-      >['context']
-    >
-  }
-</script>
-
 <script
   lang="ts"
   generics="TRouter extends AnyRouter = RegisteredRouter,TDehydrated extends Record<string, any> = Record<string, any>"
 >
-  import type {
-    AnyRouter,
-    RegisteredRouter,
-    RouterOptions,
-  } from '@tanstack/router-core'
+  import type { AnyRouter, RegisteredRouter } from '@tanstack/router-core'
   import { setRouterContext } from './routerContext'
+  import { RouterProps } from './router.ts'
 
   let { router, ...rest }: RouterProps<TRouter, TDehydrated> = $props()
 

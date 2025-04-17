@@ -1,4 +1,4 @@
-import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library'
+import { cleanup, fireEvent, render, screen } from '@testing-library/svelte'
 
 import { afterEach, describe, expect, test, vi } from 'vitest'
 

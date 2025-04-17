@@ -1,7 +1,7 @@
 import * as Solid from 'solid-js'
 import '@testing-library/jest-dom/vitest'
 import { afterEach, describe, expect, test } from 'vitest'
-import { cleanup, fireEvent, render, screen } from '@solidjs/testing-library'
+import { cleanup, fireEvent, render, screen } from '@testing-library/svelte'
 
 import { z } from 'zod'
 import {

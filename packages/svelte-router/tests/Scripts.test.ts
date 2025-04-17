@@ -1,5 +1,5 @@
 import { describe, expect, test } from 'vitest'
-import { render } from '@solidjs/testing-library'
+import { render } from '@testing-library/svelte'
 
 import {
   HeadContent,

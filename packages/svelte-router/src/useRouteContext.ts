@@ -1,5 +1,4 @@
 import { useMatch } from './useMatch'
-import type { Accessor } from 'solid-js'
 import type {
   AnyRouter,
   RegisteredRouter,
@@ -13,7 +12,7 @@ export type UseRouteContextRoute<out TFrom> = <
   TSelected = unknown,
 >(
   opts?: UseRouteContextBaseOptions<TRouter, TFrom, true, TSelected>,
-) => Accessor<UseRouteContextResult<TRouter, TFrom, true, TSelected>>
+) => UseRouteContextResult<TRouter, TFrom, true, TSelected>
 
 export function useRouteContext<
   TRouter extends AnyRouter = RegisteredRouter,
@@ -22,7 +21,7 @@ export function useRouteContext<
   TSelected = unknown,
 >(
   opts: UseRouteContextOptions<TRouter, TFrom, TStrict, TSelected>,
-): Accessor<UseRouteContextResult<TRouter, TFrom, TStrict, TSelected>> {
+): UseRouteContextResult<TRouter, TFrom, TStrict, TSelected> {
   return useMatch({
     ...(opts as any),
     select: (match) =>

@@ -5,20 +5,21 @@ import packageJson from './package.json'
 
 const config = defineConfig({
   plugins: [svelte()],
+  resolve: process.env.VITEST ? { conditions: ['browser'] } : undefined,
   test: {
     name: packageJson.name,
     dir: './tests',
     watch: false,
     environment: 'jsdom',
     typecheck: { enabled: true },
-    setupFiles: ['./tests/setupTests.tsx'],
+    setupFiles: ['./tests/setupTests.ts'],
   },
 })
 
 export default mergeConfig(
   config,
   tanstackViteConfig({
-    entry: './src/index.tsx',
+    entry: './src/index.ts',
     srcDir: './src',
   }),
 )

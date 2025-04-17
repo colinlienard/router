@@ -292,7 +292,6 @@ export {
 } from './route'
 export type {
   AnyRootRoute,
-  SolidNode,
   SyncRouteComponent,
   AsyncRouteComponent,
   RouteComponent,
@@ -311,12 +310,10 @@ export {
 } from '@tanstack/router-core'
 
 export { default as RouterProvider } from './RouterProvider.svelte'
-export type { RouterProps } from './RouterProvider.svelte'
+export type { RouterProps } from './router.ts'
 
-export {
-  useElementScrollRestoration,
-  default as ScrollRestoration,
-} from './ScrollRestoration.svelte'
+export { useElementScrollRestoration } from './useScrollRestoration'
+export { default as ScrollRestoration } from './ScrollRestoration.svelte'
 
 export type { UseBlockerOpts, ShouldBlockFn } from './useBlocker.svelte'
 export { default as Block } from './Block.svelte'
@@ -336,8 +333,6 @@ export { useRouter } from './useRouter'
 export { useRouterState } from './useRouterState'
 export { useLocation } from './useLocation'
 export { useCanGoBack } from './useCanGoBack'
-
-export { useLayoutEffect } from './utils.svelte'
 
 export { default as CatchNotFound } from './CatchNotFound.svelte'
 export { default as DefaultGlobalNotFound } from './DefaultGlobalNotFound.svelte'
@@ -375,5 +370,6 @@ export type {
 export { default as ScriptOnce } from './ScriptOnce.svelte'
 
 export { default as Asset } from './Asset.svelte'
-export { default as HeadContent, useTags } from './HeadContent.svelte'
+export { default as HeadContent } from './HeadContent.svelte'
+export { useTags } from './tags'
 export { default as Scripts } from './Scripts.svelte'

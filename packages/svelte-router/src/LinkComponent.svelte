@@ -6,8 +6,8 @@
 
 <script lang="ts">
   import { RegisteredRouter } from '@tanstack/router-core'
-  import { LinkComponentProps } from './link.svelte.ts'
-  import { useLinkProps } from './link.svelte.ts'
+  import { LinkComponentProps } from './link.svelte'
+  import { useLinkProps } from './link.svelte'
 
   let props: LinkComponentProps<
     any,

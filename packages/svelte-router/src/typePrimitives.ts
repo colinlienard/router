@@ -1,4 +1,4 @@
-import type { LinkComponentProps } from './link'
+import type { LinkComponentProps } from './link.svelte'
 import type { UseParamsOptions } from './useParams'
 import type { UseSearchOptions } from './useSearch'
 import type {

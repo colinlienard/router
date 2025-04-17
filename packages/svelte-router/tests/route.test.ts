@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, test, vi } from 'vitest'
-import { cleanup, render, screen } from '@solidjs/testing-library'
+import { cleanup, render, screen } from '@testing-library/svelte'
 
 import {
   RouterProvider,

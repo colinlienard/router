@@ -3,8 +3,11 @@ import type { Snippet } from 'svelte'
 import type { RouterHistory } from '@tanstack/history'
 import type {
   AnyRoute,
+  AnyRouter,
   CreateRouterFn,
+  RegisteredRouter,
   RouterConstructorOptions,
+  RouterOptions,
   TrailingSlashOption,
 } from '@tanstack/router-core'
 import type {
@@ -19,30 +22,30 @@ declare module '@tanstack/router-core' {
      * The default `component` a route should use if no component is provided.
      *
      * @default Outlet
-     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/solid/api/router/RouterOptionsType#defaultcomponent-property)
+     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/svelte/api/router/RouterOptionsType#defaultcomponent-property)
      */
     defaultComponent?: RouteComponent
     /**
      * The default `errorComponent` a route should use if no error component is provided.
      *
      * @default ErrorComponent
-     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/solid/api/router/RouterOptionsType#defaulterrorcomponent-property)
-     * @link [Guide](https://tanstack.com/router/latest/docs/framework/solid/guide/data-loading#handling-errors-with-routeoptionserrorcomponent)
+     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/svelte/api/router/RouterOptionsType#defaulterrorcomponent-property)
+     * @link [Guide](https://tanstack.com/router/latest/docs/framework/svelte/guide/data-loading#handling-errors-with-routeoptionserrorcomponent)
      */
     defaultErrorComponent?: ErrorRouteComponent
     /**
      * The default `pendingComponent` a route should use if no pending component is provided.
      *
-     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/solid/api/router/RouterOptionsType#defaultpendingcomponent-property)
-     * @link [Guide](https://tanstack.com/router/latest/docs/framework/solid/guide/data-loading#showing-a-pending-component)
+     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/svelte/api/router/RouterOptionsType#defaultpendingcomponent-property)
+     * @link [Guide](https://tanstack.com/router/latest/docs/framework/svelte/guide/data-loading#showing-a-pending-component)
      */
     defaultPendingComponent?: RouteComponent
     /**
      * The default `notFoundComponent` a route should use if no notFound component is provided.
      *
      * @default NotFound
-     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/solid/api/router/RouterOptionsType#defaultnotfoundcomponent-property)
-     * @link [Guide](https://tanstack.com/router/latest/docs/framework/solid/guide/not-found-errors#default-router-wide-not-found-handling)
+     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/svelte/api/router/RouterOptionsType#defaultnotfoundcomponent-property)
+     * @link [Guide](https://tanstack.com/router/latest/docs/framework/svelte/guide/not-found-errors#default-router-wide-not-found-handling)
      */
     defaultNotFoundComponent?: NotFoundRouteComponent
     /**
@@ -50,7 +53,7 @@ declare module '@tanstack/router-core' {
      *
      * This is useful for providing a context to the entire router.
      *
-     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/solid/api/router/RouterOptionsType#wrap-property)
+     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/svelte/api/router/RouterOptionsType#wrap-property)
      */
     Wrap?: Snippet
     /**
@@ -58,7 +61,7 @@ declare module '@tanstack/router-core' {
      *
      * This is useful for providing a context to the inner contents of the router where you also need access to the router context and hooks.
      *
-     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/solid/api/router/RouterOptionsType#innerwrap-property)
+     * @link [API Docs](https://tanstack.com/router/latest/docs/framework/svelte/api/router/RouterOptionsType#innerwrap-property)
      */
     InnerWrap?: Snippet
 
@@ -100,4 +103,29 @@ export class Router<
   ) {
     super(options)
   }
+}
+
+export type RouterProps<
+  TRouter extends AnyRouter = RegisteredRouter,
+  TDehydrated extends Record<string, any> = Record<string, any>,
+> = Omit<
+  RouterOptions<
+    TRouter['routeTree'],
+    NonNullable<TRouter['options']['trailingSlash']>,
+    false,
+    TRouter['history'],
+    TDehydrated
+  >,
+  'context'
+> & {
+  router: TRouter
+  context?: Partial<
+    RouterOptions<
+      TRouter['routeTree'],
+      NonNullable<TRouter['options']['trailingSlash']>,
+      false,
+      TRouter['history'],
+      TDehydrated
+    >['context']
+  >
 }

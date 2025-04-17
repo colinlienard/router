@@ -9,7 +9,6 @@ import {
   useMatches,
 } from '../src'
 import type { AnyRouteMatch, RouteMatch } from '@tanstack/router-core'
-import type * as Solid from 'solid-js'
 
 const rootRoute = createRootRoute()
 
@@ -170,7 +169,7 @@ test('when matching a route with params', () => {
     matchRoute({
       to: '/invoices/$invoiceId',
     }),
-  ).toEqualTypeOf<Solid.Accessor<false | { invoiceId: string }>>()
+  ).toEqualTypeOf<false | { invoiceId: string }>()
 })
 
 test('when matching a route with params underneath a layout route', () => {
@@ -180,11 +179,11 @@ test('when matching a route with params underneath a layout route', () => {
     matchRoute({
       to: '/comments/$id',
     }),
-  ).toEqualTypeOf<Solid.Accessor<false | { id: string }>>()
+  ).toEqualTypeOf<false | { id: string }>()
 })
 
 test('useMatches returns a union of all matches', () => {
-  expectTypeOf(useMatches<DefaultRouter>()()).toEqualTypeOf<
+  expectTypeOf(useMatches<DefaultRouter>()).toEqualTypeOf<
     Array<
       | RootMatch
       | IndexMatch
@@ -198,7 +197,7 @@ test('useMatches returns a union of all matches', () => {
 })
 
 test('when filtering useMatches by search', () => {
-  const matches = useMatches<DefaultRouter>()()
+  const matches = useMatches<DefaultRouter>()
 
   expectTypeOf(isMatch<(typeof matches)[number], ''>)
     .parameter(1)
@@ -213,7 +212,7 @@ test('when filtering useMatches by search', () => {
 })
 
 test('when filtering useMatches by loaderData with an array', () => {
-  const matches = useMatches<DefaultRouter>()()
+  const matches = useMatches<DefaultRouter>()
 
   expectTypeOf(isMatch<(typeof matches)[number], ''>)
     .parameter(1)
