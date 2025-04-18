@@ -1,11 +1,11 @@
 import { defineConfig, mergeConfig } from 'vitest/config'
 import { tanstackViteConfig } from '@tanstack/config/vite'
 import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { svelteTesting } from '@testing-library/svelte/vite'
 import packageJson from './package.json'
 
 const config = defineConfig({
-  plugins: [svelte()],
-  resolve: process.env.VITEST ? { conditions: ['browser'] } : undefined,
+  plugins: [svelte(), svelteTesting()],
   test: {
     name: packageJson.name,
     dir: './tests',

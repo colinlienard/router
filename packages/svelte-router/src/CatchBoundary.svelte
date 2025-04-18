@@ -10,7 +10,7 @@
   } = $props()
 </script>
 
-<svelte:boundary>
+<svelte:boundary onerror={console.log}>
   {@render props.children()}
   {#snippet failed(error, reset)}
     {#if props.errorComponent}

@@ -1,15 +1,15 @@
 import { describe, expect, test } from 'vitest'
 import { render } from '@testing-library/svelte'
 
+import HeadContent from '../src/HeadContent.svelte'
 import {
-  HeadContent,
   RouterProvider,
   createMemoryHistory,
   createRootRoute,
   createRoute,
   createRouter,
 } from '../src'
-import { Scripts } from '../src/Scripts'
+import Scripts from '../src/Scripts.svelte'
 
 describe('ssr scripts', () => {
   test('it works', async () => {
@@ -27,9 +27,7 @@ describe('ssr scripts', () => {
           ],
         }
       },
-      component: () => {
-        return <Scripts />
-      },
+      component: Scripts,
     })
 
     const indexRoute = createRoute({
@@ -71,9 +69,7 @@ describe('ssr scripts', () => {
         { src: 'script.js' },
         undefined, // 'script2.js' opted out by certain conditions, such as `NODE_ENV=production`.
       ],
-      component: () => {
-        return <Scripts />
-      },
+      component: Scripts,
     })
 
     const indexRoute = createRoute({
@@ -99,7 +95,8 @@ describe('ssr scripts', () => {
       { src: 'script3.js' },
     ])
 
-    const { container } = render(() => <RouterProvider router={router} />)
+    const { container } = render(RouterProvider, { props: { router } })
+    console.log(container)
 
     expect(container.innerHTML).toEqual(
       `<script src="script.js"></script><script src="script3.js"></script>`,
@@ -139,9 +136,7 @@ describe('ssr HeadContent', () => {
           ],
         }
       },
-      component: () => {
-        return <HeadContent />
-      },
+      component: HeadContent,
     })
 
     const indexRoute = createRoute({

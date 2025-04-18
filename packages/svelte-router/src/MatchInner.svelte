@@ -39,6 +39,7 @@
   const route = router.routesById[matchState.routeId]!
 
   const match = matchState.match
+  console.log('match inner', route)
 
   if (match.status === 'redirected') {
     invariant(isRedirect(match.error), 'Expected a redirect error')
@@ -50,8 +51,8 @@
   <RouteNotFound {router} {route} data={match.error} />
 {:else if match.status === 'error'}
   {#if router.isServer}
-    {#if route().options.errorComponent}
-      {@render route().options.errorComponent({
+    {#if route.options.errorComponent}
+      {@render route.options.errorComponent({
         error: match.error,
         info: { componentStack: '' },
       })}
@@ -70,8 +71,8 @@
     })()}
   {/if}
 {:else if match.status === 'success'}
-  {#if route().options.component}
-    {@render route().options.component()}
+  {#if route.options.component}
+    {@render route.options.component()}
   {:else if router.options.defaultComponent}
     {@render router.options.defaultComponent(undefined)}
   {:else}

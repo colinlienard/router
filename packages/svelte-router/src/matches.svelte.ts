@@ -1,6 +1,11 @@
 import { useRouterState } from './useRouterState'
 import { useRouter } from './useRouter'
 import { getMatchContext } from './matchContext'
+import type {
+  HTMLLinkAttributes,
+  HTMLMetaAttributes,
+  HTMLScriptAttributes,
+} from 'svelte/elements'
 import type { Snippet } from 'svelte'
 import type {
   AnyRouter,
@@ -21,10 +26,10 @@ import type {
 
 declare module '@tanstack/router-core' {
   export interface RouteMatchExtensions {
-    meta?: Array<HTMLMetaElement | undefined>
-    links?: Array<HTMLLinkElement | undefined>
-    scripts?: Array<HTMLScriptElement | undefined>
-    headScripts?: Array<HTMLScriptElement | undefined>
+    meta?: Array<HTMLMetaAttributes | undefined>
+    links?: Array<HTMLLinkAttributes | undefined>
+    scripts?: Array<HTMLScriptAttributes | undefined>
+    headScripts?: Array<HTMLScriptAttributes | undefined>
   }
 }
 

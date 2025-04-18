@@ -1,5 +1,6 @@
 <script lang="ts">
   let { error }: { error: any } = $props()
+  console.log(error)
 
   let show = $state(process.env.NODE_ENV !== 'production')
 </script>
@@ -33,10 +34,10 @@
         style:padding=".3rem"
         style:color="red"
         style:overflow="auto">
-            {#if error.message}
+        {#if error?.message}
           <code>{error.message}</code>
         {/if}
-          </pre>
+      </pre>
     </div>
   {/if}
 </div>

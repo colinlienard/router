@@ -4,7 +4,8 @@
 >
   import type { AnyRouter, RegisteredRouter } from '@tanstack/router-core'
   import { setRouterContext } from './routerContext'
-  import { RouterProps } from './router.ts'
+  import { RouterProps } from './router'
+  import Matches from './MatchesComponent.svelte'
 
   let { router, ...rest }: RouterProps<TRouter, TDehydrated> = $props()
 
@@ -23,8 +24,8 @@
 
 {#if router.options.Wrap}
   <router.options.Wrap>
-    <!-- TODO: Matches component -->
+    <Matches />
   </router.options.Wrap>
 {:else}
-  <!-- TODO: Matches component -->
+  <Matches />
 {/if}

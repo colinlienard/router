@@ -31,5 +31,5 @@ export function useRouterState<
     if (opts?.select) return opts.select(state)
 
     return state
-  }) as UseRouterStateResult<TRouter, TSelected>
+  }).current as UseRouterStateResult<TRouter, TSelected>
 }

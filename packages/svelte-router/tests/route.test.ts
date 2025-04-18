@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, test, vi } from 'vitest'
 import { cleanup, render, screen } from '@testing-library/svelte'
 
+import { createRawSnippet } from 'svelte'
 import {
   RouterProvider,
   createRootRoute,
@@ -65,7 +66,7 @@ describe('createRoute has the same hooks as getRouteApi', () => {
   )
 })
 
-/* disabled until HMR bug is fixed 
+/* disabled until HMR bug is fixed
 describe('throws invariant exception when trying to access properties before `createRouter` completed', () => {
   function setup() {
     const rootRoute = createRootRoute()
@@ -146,16 +147,16 @@ describe('throws invariant exception when trying to access properties before `cr
 })
 */
 
-describe('onEnter event', () => {
+describe.only('onEnter event', () => {
   it('should have router context defined in router.load()', async () => {
     const fn = vi.fn()
     const rootRoute = createRootRoute()
     const indexRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: '/',
-      component: () => {
-        return <h1>Index</h1>
-      },
+      component: createRawSnippet(() => ({
+        render: () => '<div>Index</div>',
+      })),
       onEnter: ({ context }) => {
         fn(context)
       },
@@ -174,9 +175,9 @@ describe('onEnter event', () => {
     const indexRoute = createRoute({
       getParentRoute: () => rootRoute,
       path: '/',
-      component: () => {
-        return <h1>Index</h1>
-      },
+      component: createRawSnippet(() => ({
+        render: () => '<h1>Index</h1>',
+      })),
       onEnter: ({ context }) => {
         fn(context)
       },
@@ -184,7 +185,7 @@ describe('onEnter event', () => {
     const routeTree = rootRoute.addChildren([indexRoute])
     const router = createRouter({ routeTree, context: { foo: 'bar' } })
 
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
 
     const indexElem = await screen.findByText('Index')
     expect(indexElem).toBeInTheDocument()
@@ -211,11 +212,13 @@ describe('route.head', () => {
       head: () => ({
         meta: [{ title: 'Index' }],
       }),
-      component: () => <div>Index</div>,
+      component: createRawSnippet(() => ({
+        render: () => '<h1>Index</h1>',
+      })),
     })
     const routeTree = rootRoute.addChildren([indexRoute])
     const router = createRouter({ routeTree })
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
     const indexElem = await screen.findByText('Index')
     expect(indexElem).toBeInTheDocument()
 
@@ -251,11 +254,13 @@ describe('route.head', () => {
       loader: async () => {
         await new Promise((resolve) => setTimeout(resolve, 200))
       },
-      component: () => <div>Index</div>,
+      component: createRawSnippet(() => ({
+        render: () => '<div>Index</div>',
+      })),
     })
     const routeTree = rootRoute.addChildren([indexRoute])
     const router = createRouter({ routeTree })
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
     const indexElem = await screen.findByText('Index')
     expect(indexElem).toBeInTheDocument()
 
@@ -283,11 +288,13 @@ describe('route.head', () => {
       head: () => ({
         scripts: [{ src: 'index.js' }],
       }),
-      component: () => <div>Index</div>,
+      component: createRawSnippet(() => ({
+        render: () => '<div>Index</div>',
+      })),
     })
     const routeTree = rootRoute.addChildren([indexRoute])
     const router = createRouter({ routeTree })
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
     const indexElem = await screen.findByText('Index')
     expect(indexElem).toBeInTheDocument()
 
@@ -313,11 +320,13 @@ describe('route.head', () => {
       loader: async () => {
         await new Promise((resolve) => setTimeout(resolve, 200))
       },
-      component: () => <div>Index</div>,
+      component: createRawSnippet(() => ({
+        render: () => '<div>Index</div>',
+      })),
     })
     const routeTree = rootRoute.addChildren([indexRoute])
     const router = createRouter({ routeTree })
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
     const indexElem = await screen.findByText('Index')
     expect(indexElem).toBeInTheDocument()
 
@@ -340,11 +349,13 @@ describe('route.head', () => {
       head: () => ({
         links: [{ href: 'index.css' }],
       }),
-      component: () => <div>Index</div>,
+      component: createRawSnippet(() => ({
+        render: () => '<div>Index</div>',
+      })),
     })
     const routeTree = rootRoute.addChildren([indexRoute])
     const router = createRouter({ routeTree })
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
     const indexElem = await screen.findByText('Index')
     expect(indexElem).toBeInTheDocument()
 
@@ -370,11 +381,13 @@ describe('route.head', () => {
       loader: async () => {
         await new Promise((resolve) => setTimeout(resolve, 200))
       },
-      component: () => <div>Index</div>,
+      component: createRawSnippet(() => ({
+        render: () => '<div>Index</div>',
+      })),
     })
     const routeTree = rootRoute.addChildren([indexRoute])
     const router = createRouter({ routeTree })
-    render(() => <RouterProvider router={router} />)
+    render(RouterProvider, { props: { router } })
     const indexElem = await screen.findByText('Index')
     expect(indexElem).toBeInTheDocument()
 
