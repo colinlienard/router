@@ -6,6 +6,8 @@
     "moduleResolution": "Bundler",
     "module": "ESNext",
     "lib": ["DOM", "DOM.Iterable", "ES2022"],
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "verbatimModuleSyntax": true
+  },
+  "include": ["src/**/*.ts", "src/**/*.svelte"]
 }

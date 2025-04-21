@@ -1,7 +1,7 @@
 <script lang="ts">
   import {
     _resolvePromptBlockerArgs,
-    PromptProps,
+    type PromptProps,
     useBlocker,
   } from './useBlocker.svelte'
 

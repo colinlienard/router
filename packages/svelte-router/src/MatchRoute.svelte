@@ -2,10 +2,10 @@
   lang="ts"
   generics="TRouter extends AnyRouter = RegisteredRouter, const TFrom extends string = string, const TTo extends string | undefined = undefined, const TMaskFrom extends string = TFrom, const TMaskTo extends string = ''"
 >
-  import { AnyRouter, RegisteredRouter } from '@tanstack/router-core'
+  import type { AnyRouter, RegisteredRouter } from '@tanstack/router-core'
 
   import { useRouterState } from './useRouterState'
-  import { MakeMatchRouteOptions, useMatchRoute } from './matches.svelte'
+  import { type MakeMatchRouteOptions, useMatchRoute } from './matches.svelte'
 
   let props: MakeMatchRouteOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo> =
     $props()

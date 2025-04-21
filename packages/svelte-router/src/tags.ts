@@ -39,7 +39,6 @@ export function useTags() {
             }
           }
         } else {
-          // @ts-expect-error TODO: fix
           const attribute = m.name ?? m.property
           if (attribute) {
             if (metaByAttribute[attribute]) {

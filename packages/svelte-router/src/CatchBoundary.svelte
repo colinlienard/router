@@ -1,6 +1,6 @@
 <script lang="ts">
-  import { Snippet } from 'svelte'
-  import type { ErrorRouteComponent } from './route'
+  import type { Snippet } from 'svelte'
+  import type { ErrorRouteComponent } from './route.js'
   import ErrorComponent from './ErrorComponent.svelte'
 
   let props: {
@@ -10,13 +10,13 @@
   } = $props()
 </script>
 
-<svelte:boundary onerror={console.log}>
+<svelte:boundary onerror={(error) => props.onCatch?.(error)}>
   {@render props.children()}
   {#snippet failed(error, reset)}
     {#if props.errorComponent}
       {@render props.errorComponent({ error: error as Error, reset })}
     {:else}
-      <ErrorComponent {error}></ErrorComponent>
+      <ErrorComponent {error} />
     {/if}
   {/snippet}
 </svelte:boundary>

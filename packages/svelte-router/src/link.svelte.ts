@@ -341,7 +341,7 @@ export function useLinkProps<
     ...propsSafeToSpread,
     ...resolvedActiveProps,
     ...resolvedInactiveProps,
-    href: href(),
+    href,
     // ref: mergeRefs(ref, _options().ref),
     onClick: composeEventHandlers([onClick, handleClick]),
     onFocus: composeEventHandlers([onFocus, handleFocus]),

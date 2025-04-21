@@ -1,8 +1,9 @@
 <script lang="ts">
-  import { Snippet } from 'svelte'
+  import type { Snippet } from 'svelte'
   import { isNotFound } from '@tanstack/router-core'
   import CatchBoundary from './CatchBoundary.svelte'
   import type { NotFoundError } from '@tanstack/router-core'
+  import ErrorComponent from './ErrorComponent.svelte'
 
   let props: {
     fallback?: Snippet<[{ error: NotFoundError }]>
@@ -28,8 +29,6 @@
   {#if isNotFound(error)}
     {@render props.fallback?.({ error })}
   {:else}
-    {(() => {
-      throw error
-    })()}
+    <ErrorComponent {error} />
   {/if}
 {/snippet}

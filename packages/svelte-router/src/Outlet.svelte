@@ -43,8 +43,8 @@
   {#if matchId === rootRouteId}
     <!-- TODO -->
     <!-- {@render router.options.defaultPendingComponent?.(undefined)} -->
-    <Match {matchId} />
+    <Match matchId={childMatchId} />
   {:else}
-    <Match {matchId} />
+    <Match matchId={childMatchId} />
   {/if}
 {/if}

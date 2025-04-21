@@ -48,6 +48,7 @@ stats.html
 .cache
 .pnpm-store
 ts-perf
+.svelte-kit
 
 /examples/*/*/yarn.lock
 /examples/*/*/package-lock.json

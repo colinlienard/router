@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { AnyRoute, isRedirect, pick } from '@tanstack/router-core'
+  import { type AnyRoute, isRedirect, pick } from '@tanstack/router-core'
   import { useRouter } from './useRouter'
   import { useRouterState } from './useRouterState'
   import Outlet from './Outlet.svelte'
@@ -39,7 +39,6 @@
   const route = router.routesById[matchState.routeId]!
 
   const match = matchState.match
-  console.log('match inner', route)
 
   if (match.status === 'redirected') {
     invariant(isRedirect(match.error), 'Expected a redirect error')

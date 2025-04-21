@@ -1,6 +1,6 @@
 <script lang="ts" generics="T">
-  import { Snippet } from 'svelte'
-  import { AwaitOptions } from './awaited'
+  import type { Snippet } from 'svelte'
+  import type { AwaitOptions } from './awaited.js'
 
   let props: AwaitOptions<T> & {
     fallback?: Snippet

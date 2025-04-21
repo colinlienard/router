@@ -4,7 +4,7 @@
 >
   import type { AnyRouter, RegisteredRouter } from '@tanstack/router-core'
   import { setRouterContext } from './routerContext'
-  import { RouterProps } from './router'
+  import { type RouterProps } from './router'
   import Matches from './MatchesComponent.svelte'
 
   let { router, ...rest }: RouterProps<TRouter, TDehydrated> = $props()

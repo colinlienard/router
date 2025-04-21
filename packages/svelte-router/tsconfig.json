@@ -1,4 +1,7 @@
 {
   "extends": "../../tsconfig.json",
+  "compilerOptions": {
+    "verbatimModuleSyntax": true
+  },
   "include": ["src", "tests", "vite.config.ts", "eslint.config.ts"]
 }

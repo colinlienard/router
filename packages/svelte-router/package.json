@@ -38,7 +38,7 @@
     "test:perf": "vitest bench",
     "test:perf:dev": "pnpm run test:perf --watch --hideSkippedTests",
     "test:build": "publint --strict && attw --ignore-rules no-resolution --pack .",
-    "build": "vite build && tsc -p tsconfig.build.json"
+    "build": "svelte-package --input ./src --output ./dist"
   },
   "type": "module",
   "types": "dist/esm/index.d.ts",
@@ -47,8 +47,8 @@
   "exports": {
     ".": {
       "svelte": {
-        "types": "./dist/source/index.d.ts",
-        "default": "./dist/source/index.js"
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
       },
       "import": {
         "types": "./dist/esm/index.d.ts",
@@ -78,13 +78,14 @@
     "tiny-warning": "^1.0.3"
   },
   "devDependencies": {
+    "@sveltejs/package": "^2.3.11",
     "@sveltejs/vite-plugin-svelte": "^5.0.3",
     "@testing-library/jest-dom": "^6.6.3",
     "@testing-library/svelte": "^5.2.7",
     "@types/jsesc": "^3.0.3",
     "combinate": "^1.1.11",
     "eslint-plugin-svelte": "^3.3.3",
-    "svelte": "^5.25.3",
+    "svelte": "^5.28.1",
     "tslib": "^2.8.1",
     "typescript-eslint": "^8.28.0",
     "zod": "^3.23.8"
