@@ -1,6 +1,5 @@
 <script lang="ts">
   let { error }: { error: any } = $props()
-  console.log(error)
 
   let show = $state(process.env.NODE_ENV !== 'production')
 </script>

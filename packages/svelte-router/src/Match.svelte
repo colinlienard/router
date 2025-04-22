@@ -1,11 +1,6 @@
 <script lang="ts">
   import invariant from 'tiny-invariant'
-  import {
-    createControlledPromise,
-    isNotFound,
-    pick,
-    rootRouteId,
-  } from '@tanstack/router-core'
+  import { isNotFound, rootRouteId } from '@tanstack/router-core'
   import CatchBoundary from './CatchBoundary.svelte'
   import { useRouterState } from './useRouterState'
   import { useRouter } from './useRouter'
@@ -18,6 +13,7 @@
   import ErrorComponent from './ErrorComponent.svelte'
   import warning from 'tiny-warning'
   import MatchInner from './MatchInner.svelte'
+  import Suspense from './Suspense.svelte'
 
   let props: { matchId: string } = $props()
 
@@ -51,6 +47,15 @@
       router.options.notFoundRoute?.options.component)
     : route.options.notFoundComponent
 
+  const ResolvedSuspenseBoundary =
+    // If we're on the root route, allow forcefully wrapping in suspense
+    (!route.isRoot || route.options.wrapInSuspense) &&
+    (route.options.wrapInSuspense ??
+      PendingComponent ??
+      (route.options.errorComponent as any)?.preload)
+      ? Suspense
+      : SafeFragment
+
   const ResolvedCatchBoundary = routeErrorComponent
     ? CatchBoundary
     : SafeFragment
@@ -65,74 +70,9 @@
       return s.matches[index - 1]?.routeId as string
     },
   })
-
-  const matchState = useRouterState({
-    select: (s) => {
-      const matchIndex = s.matches.findIndex((d) => d.id === props.matchId)
-      const match = s.matches[matchIndex]!
-      const routeId = match.routeId as string
-
-      const remountFn =
-        (router.routesById[routeId] as AnyRoute).options.remountDeps ??
-        router.options.defaultRemountDeps
-      const remountDeps = remountFn?.({
-        routeId,
-        loaderDeps: match.loaderDeps,
-        params: match._strictParams,
-        search: match._strictSearch,
-      })
-      const key = remountDeps ? JSON.stringify(remountDeps) : undefined
-
-      return {
-        key,
-        routeId,
-        match: pick(match, ['id', 'status', 'error']),
-      }
-    },
-  })
-
-  let pending = $state(false)
-
-  if (matchState.match.status === 'pending') {
-    pending = true
-    const pendingMinMs =
-      route.options.pendingMinMs ?? router.options.defaultPendingMinMs
-
-    if (
-      pendingMinMs &&
-      !router.getMatch(matchState.match.id)?.minPendingPromise
-    ) {
-      // Create a promise that will resolve after the minPendingMs
-      if (!router.isServer) {
-        const minPendingPromise = createControlledPromise<void>()
-
-        Promise.resolve().then(() => {
-          router.updateMatch(matchState.match.id, (prev) => ({
-            ...prev,
-            minPendingPromise,
-          }))
-        })
-
-        setTimeout(() => {
-          minPendingPromise.resolve()
-
-          // We've handled the minPendingPromise, so we can delete it
-          router.updateMatch(matchState.match.id, (prev) => ({
-            ...prev,
-            minPendingPromise: undefined,
-          }))
-        }, pendingMinMs)
-      }
-    }
-
-    router.getMatch(matchState.match.id)?.loadPromise?.resolve() // Resolve?
-    pending = false
-  }
 </script>
 
-{#if pending}
-  <PendingComponent />
-{:else}
+<ResolvedSuspenseBoundary fallback={PendingComponent}>
   <ResolvedCatchBoundary
     errorComponent={routeErrorComponent || ErrorComponent}
     onCatch={(error: Error) => {
@@ -154,4 +94,4 @@
     <OnRendered />
     <ScrollRestoration />
   {/if}
-{/if}
+</ResolvedSuspenseBoundary>
