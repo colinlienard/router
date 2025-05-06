@@ -330,7 +330,7 @@ export {
 
 export { useRouteContext } from './useRouteContext'
 export { useRouter } from './useRouter'
-export { useRouterState } from './useRouterState'
+export { useRouterState } from './useRouterState.svelte.js'
 export { useLocation } from './useLocation'
 export { useCanGoBack } from './useCanGoBack'
 

@@ -3,7 +3,6 @@
   import SafeFragment from './SafeFragment.svelte'
   import MatchesInner from './MatchesInner.svelte'
   import Transitioner from './Transitioner.svelte'
-  import Suspense from './Suspense.svelte'
 
   const router = useRouter()
 
@@ -13,7 +12,7 @@
   const ResolvedSuspense =
     router.isServer || (typeof document !== 'undefined' && router.clientSsr)
       ? SafeFragment
-      : Suspense
+      : SafeFragment // use suspense
 
   const InnerWrap = router.options.InnerWrap || SafeFragment
 </script>

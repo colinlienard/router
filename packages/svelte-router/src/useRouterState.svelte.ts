@@ -11,10 +11,11 @@ export type UseRouterStateOptions<TRouter extends AnyRouter, TSelected> = {
   select?: (state: RouterState<TRouter['routeTree']>) => TSelected
 }
 
-export type UseRouterStateResult<
-  TRouter extends AnyRouter,
-  TSelected,
-> = unknown extends TSelected ? RouterState<TRouter['routeTree']> : TSelected
+export type UseRouterStateResult<TRouter extends AnyRouter, TSelected> = {
+  current: unknown extends TSelected
+    ? RouterState<TRouter['routeTree']>
+    : TSelected
+}
 
 export function useRouterState<
   TRouter extends AnyRouter = RegisteredRouter,
@@ -31,5 +32,5 @@ export function useRouterState<
     if (opts?.select) return opts.select(state)
 
     return state
-  }).current as UseRouterStateResult<TRouter, TSelected>
+  }) as UseRouterStateResult<TRouter, TSelected>
 }

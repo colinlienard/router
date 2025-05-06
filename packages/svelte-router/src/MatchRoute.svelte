@@ -4,7 +4,7 @@
 >
   import type { AnyRouter, RegisteredRouter } from '@tanstack/router-core'
 
-  import { useRouterState } from './useRouterState'
+  import { useRouterState } from './useRouterState.svelte.js'
   import { type MakeMatchRouteOptions, useMatchRoute } from './matches.svelte'
 
   let props: MakeMatchRouteOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo> =
@@ -18,7 +18,7 @@
   const params = matchRoute(props as any) as boolean
 </script>
 
-{#if status}
+{#if status.current}
   {#if typeof props.children === 'function'}
     {@render (props.children as any)?.(params)}
   {:else}

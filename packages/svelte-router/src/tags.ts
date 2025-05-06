@@ -1,5 +1,5 @@
 import { useRouter } from './useRouter'
-import { useRouterState } from './useRouterState'
+import { useRouterState } from './useRouterState.svelte.js'
 import type { RouterManagedTag } from '@tanstack/router-core'
 
 function uniqBy<T>(arr: Array<T>, fn: (item: T) => string) {
@@ -27,7 +27,7 @@ export function useTags() {
     const resultMeta: Array<RouterManagedTag> = []
     const metaByAttribute: Record<string, true> = {}
     let title: RouterManagedTag | undefined
-    ;[...routeMeta].reverse().forEach((metas) => {
+    ;[...routeMeta.current].reverse().forEach((metas) => {
       ;[...metas].reverse().forEach((m) => {
         if (!m) return
 
@@ -124,9 +124,9 @@ export function useTags() {
   return uniqBy(
     [
       ...meta(),
-      ...preloadMeta,
-      ...links,
-      ...headScripts,
+      ...preloadMeta.current,
+      ...links.current,
+      ...headScripts.current,
     ] as Array<RouterManagedTag>,
     (d) => {
       return JSON.stringify(d)

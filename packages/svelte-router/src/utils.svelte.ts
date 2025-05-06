@@ -1,20 +1,18 @@
-export const usePrevious = (current: boolean) => {
-  const result = $derived.by(
-    (
-      prev: { current: boolean | null; previous: boolean | null } = {
-        current: null,
-        previous: null,
-      },
-    ) => {
-      if (prev.current !== current) {
-        prev.previous = prev.current
-        prev.current = current
-      }
+export const usePrevious = (fn: () => boolean) => {
+  const prev: { current: boolean | null; previous: boolean | null } = $state({
+    current: null,
+    previous: null,
+  })
 
-      return prev
-    },
-  )
-  return result
+  $effect(() => {
+    const current = fn()
+    if (prev.current !== current) {
+      prev.previous = prev.current
+      prev.current = current
+    }
+  })
+
+  return prev
 }
 
 /**

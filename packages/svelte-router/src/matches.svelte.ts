@@ -1,4 +1,4 @@
-import { useRouterState } from './useRouterState'
+import { useRouterState } from './useRouterState.svelte.js'
 import { useRouter } from './useRouter'
 import { getMatchContext } from './matchContext'
 import type {
@@ -63,7 +63,7 @@ export function useMatchRoute<TRouter extends AnyRouter = RegisteredRouter>() {
     const { pending, caseSensitive, fuzzy, includeSearch, ...rest } = opts
 
     const matchRoute = $derived.by(() => {
-      status
+      status.current
       return router.matchRoute(rest as any, {
         pending,
         caseSensitive,
@@ -100,10 +100,11 @@ export interface UseMatchesBaseOptions<TRouter extends AnyRouter, TSelected> {
   select?: (matches: Array<MakeRouteMatchUnion<TRouter>>) => TSelected
 }
 
-export type UseMatchesResult<
-  TRouter extends AnyRouter,
-  TSelected,
-> = unknown extends TSelected ? Array<MakeRouteMatchUnion<TRouter>> : TSelected
+export type UseMatchesResult<TRouter extends AnyRouter, TSelected> = {
+  current: unknown extends TSelected
+    ? Array<MakeRouteMatchUnion<TRouter>>
+    : TSelected
+}
 
 export function useMatches<
   TRouter extends AnyRouter = RegisteredRouter,

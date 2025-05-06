@@ -8,21 +8,24 @@
   // which is common).
   import { getLocationChangeInfo } from '@tanstack/router-core'
   import { useRouter } from './useRouter'
-  import { useRouterState } from './useRouterState'
+  import { useRouterState } from './useRouterState.svelte.js'
+  import { untrack } from 'svelte'
 
   const router = useRouter()
 
-  const location = useRouterState({
+  let location = useRouterState({
     select: (s) => {
       return s.resolvedLocation?.state.key
     },
   })
 
   $effect(() => {
-    location
-    router.emit({
-      type: 'onRendered',
-      ...getLocationChangeInfo(router.state),
+    location.current
+    untrack(() => {
+      router.emit({
+        type: 'onRendered',
+        ...getLocationChangeInfo(router.state),
+      })
     })
   })
 </script>

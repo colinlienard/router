@@ -1,7 +1,6 @@
 <script lang="ts">
   import { lazyShared } from './lazyRouteComponent.svelte'
   import Outlet from './Outlet.svelte'
-  import { useSuspense } from './Suspense.svelte'
 
   let props = $props()
 
@@ -49,16 +48,17 @@
 
   const isServer = typeof window === 'undefined'
 
-  let comp = useSuspense(
-    !lazyShared.comp
-      ? () => lazyShared.load
-      : () => Promise.resolve(lazyShared.comp),
-  )
+  // TODO: use suspense
+  // if (!comp) {
+  //   const [compResource] = createResource(load, {
+  //     initialValue: comp,
+  //     ssrLoadFrom: 'initial',
+  //   })
+  //   return <>{compResource()}</>
+  // }
 </script>
 
-{#if comp}
-  {@render comp()}
-{:else if lazyShared.ssr === false}
+{#if lazyShared.ssr === false}
   {#if isServer}
     {@render lazyShared.comp.value?.(props)}
   {:else}

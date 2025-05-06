@@ -1,6 +1,6 @@
 <script lang="ts">
   import Asset from './Asset.svelte'
-  import { useRouterState } from './useRouterState'
+  import { useRouterState } from './useRouterState.svelte.js'
   import { useRouter } from './useRouter'
   import type { RouterManagedTag } from '@tanstack/router-core'
 
@@ -51,8 +51,8 @@
   })
 
   const allScripts = [
-    ...scripts.scripts,
-    ...assetScripts,
+    ...scripts.current.scripts,
+    ...assetScripts.current,
   ] as Array<RouterManagedTag>
 </script>
 

@@ -2,17 +2,17 @@
   import ErrorComponent from './ErrorComponent.svelte'
   import CatchBoundary from './CatchBoundary.svelte'
   import Match from './Match.svelte'
-  import { setMatchContext } from './matchContext'
-  import { useRouterState } from './useRouterState'
+  import { useRouterState } from './useRouterState.svelte.js'
   import warning from 'tiny-warning'
+  import { setMatchContext } from './matchContext'
 
-  const matchId = useRouterState({
+  let matchId = useRouterState({
     select: (s) => {
       return s.matches[0]?.id
     },
   })
 
-  setMatchContext(matchId)
+  setMatchContext(matchId.current)
 </script>
 
 <CatchBoundary
@@ -25,7 +25,9 @@
     warning(false, error.message || error.toString())
   }}
 >
-  {#if matchId}
-    <Match {matchId} />
+  {#if matchId.current}
+    {#key matchId.current}
+      <Match matchId={matchId.current} />
+    {/key}
   {/if}
 </CatchBoundary>

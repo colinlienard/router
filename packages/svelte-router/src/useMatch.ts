@@ -1,5 +1,5 @@
 import invariant from 'tiny-invariant'
-import { useRouterState } from './useRouterState'
+import { useRouterState } from './useRouterState.svelte.js'
 import { getDummyMatchContext, getMatchContext } from './matchContext'
 import type {
   AnyRouter,
@@ -87,5 +87,5 @@ export function useMatch<
     },
   } as any)
 
-  return matchSelection as any
+  return matchSelection.current as any
 }

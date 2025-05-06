@@ -1,9 +1,9 @@
 <script lang="ts">
   import { getLocationChangeInfo, trimPathRight } from '@tanstack/router-core'
   import { useRouter } from './useRouter'
-  import { useRouterState } from './useRouterState'
+  import { useRouterState } from './useRouterState.svelte'
   import { usePrevious } from './utils.svelte'
-  import { untrack } from 'svelte'
+  import { onMount, untrack } from 'svelte'
 
   const router = useRouter()
   let mountLoadForRouter = { router, mounted: false }
@@ -17,13 +17,15 @@
     select: (s) => s.matches.some((d) => d.status === 'pending'),
   })
 
-  const previousIsLoading = usePrevious(isLoading)
+  const previousIsLoading = usePrevious(() => isLoading.current)
 
-  let isAnyPending = $derived(isLoading || isTransitioning || hasPendingMatches)
-  let previousIsAnyPending = $derived(usePrevious(isAnyPending))
+  let isAnyPending = () => {
+    return isLoading.current || isTransitioning || hasPendingMatches.current
+  }
+  let previousIsAnyPending = $derived(!isAnyPending())
 
-  const isPagePending = isLoading || hasPendingMatches
-  const previousIsPagePending = usePrevious(isPagePending)
+  const isPagePending = $derived(isLoading.current || hasPendingMatches.current)
+  const previousIsPagePending = usePrevious(() => isPagePending)
 
   if (!router.isServer) {
     router.startTransition = (fn: () => void) => {
@@ -35,7 +37,7 @@
 
   // Subscribe to location changes
   // and try to load the new location
-  $effect(() => {
+  onMount(() => {
     const unsub = router.history.subscribe(router.load)
 
     const nextLocation = router.buildLocation({
@@ -81,7 +83,7 @@
   })
 
   $effect.pre(() => {
-    if (previousIsLoading.previous && !isLoading) {
+    if (previousIsLoading.previous && !isLoading.current) {
       untrack(() => {
         router.emit({
           type: 'onLoad',
@@ -104,18 +106,20 @@
 
   $effect.pre(() => {
     // The router was pending and now it's not
-    if (previousIsAnyPending.previous && !isAnyPending) {
+    if (previousIsAnyPending && !isAnyPending()) {
       untrack(() => {
         router.emit({
           type: 'onResolved',
           ...getLocationChangeInfo(router.state),
         })
 
-        router.__store.setState((s) => ({
-          ...s,
-          status: 'idle',
-          resolvedLocation: s.location,
-        }))
+        router.__store.setState((s) => {
+          return {
+            ...s,
+            status: 'idle',
+            resolvedLocation: s.location,
+          }
+        })
 
         if (
           typeof document !== 'undefined' &&

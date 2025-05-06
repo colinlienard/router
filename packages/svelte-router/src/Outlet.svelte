@@ -1,12 +1,10 @@
 <script lang="ts">
-  import invariant from 'tiny-invariant'
   import { getMatchContext } from './matchContext'
   import { useRouter } from './useRouter'
-  import { useRouterState } from './useRouterState'
+  import { useRouterState } from './useRouterState.svelte.js'
   import { rootRouteId } from '@tanstack/router-core'
   import Match from './Match.svelte'
   import RouteNotFound from './RouteNotFound.svelte'
-  import Suspense from './Suspense.svelte'
 
   const router = useRouter()
   const matchId = getMatchContext()
@@ -14,21 +12,17 @@
     select: (s) => s.matches.find((d) => d.id === matchId)?.routeId as string,
   })
 
-  const route = () => router.routesById[routeId]!
+  const route = () => router.routesById[routeId.current]!
 
   const parentGlobalNotFound = useRouterState({
     select: (s) => {
       const matches = s.matches
       const parentMatch = matches.find((d) => d.id === matchId)
-      invariant(
-        parentMatch,
-        `Could not find parent match for matchId "${matchId}"`,
-      )
-      return parentMatch.globalNotFound
+      return parentMatch?.globalNotFound
     },
   })
 
-  const childMatchId = useRouterState({
+  let childMatchId = useRouterState({
     select: (s) => {
       const matches = s.matches
       const index = matches.findIndex((d) => d.id === matchId)
@@ -38,14 +32,18 @@
   })
 </script>
 
-{#if parentGlobalNotFound}
+{#if parentGlobalNotFound.current}
   <RouteNotFound {router} route={route()} data={undefined} />
-{:else if childMatchId}
+{:else if childMatchId.current}
   {#if matchId === rootRouteId}
-    <Suspense fallback={router.options.defaultPendingComponent}>
-      <Match matchId={childMatchId} />
-    </Suspense>
+    <!-- TODO -->
+    <!-- {@render router.options.defaultPendingComponent?.(undefined)} -->
+    {#key childMatchId.current}
+      <Match matchId={childMatchId.current} />
+    {/key}
   {:else}
-    <Match matchId={childMatchId} />
+    {#key childMatchId.current}
+      <Match matchId={childMatchId.current} />
+    {/key}
   {/if}
 {/if}

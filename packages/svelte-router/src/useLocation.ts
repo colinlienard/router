@@ -1,4 +1,4 @@
-import { useRouterState } from './useRouterState'
+import { useRouterState } from './useRouterState.svelte.js'
 import type {
   AnyRouter,
   RegisteredRouter,

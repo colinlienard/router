@@ -1,17 +1,11 @@
 <script lang="ts">
-  import {
-    type AnyRoute,
-    createControlledPromise,
-    isRedirect,
-    pick,
-  } from '@tanstack/router-core'
+  import { type AnyRoute, isRedirect, pick } from '@tanstack/router-core'
   import { useRouter } from './useRouter'
-  import { useRouterState } from './useRouterState'
+  import { useRouterState } from './useRouterState.svelte.js'
   import Outlet from './Outlet.svelte'
   import RouteNotFound from './RouteNotFound.svelte'
   import ErrorComponent from './ErrorComponent.svelte'
   import invariant from 'tiny-invariant'
-  import { useSuspense } from './Suspense.svelte'
 
   let props: { matchId: string } = $props()
 
@@ -20,6 +14,10 @@
   const matchState = useRouterState({
     select: (s) => {
       const matchIndex = s.matches.findIndex((d) => d.id === props.matchId)
+      // matchId updates after s.matches is updated
+      if (matchIndex === -1) {
+        return { key: '', routeId: '', match: { id: '', status: '' } }
+      }
       const match = s.matches[matchIndex]!
       const routeId = match.routeId as string
 
@@ -42,80 +40,42 @@
     },
   })
 
-  const route = router.routesById[matchState.routeId]!
+  const route = () => router.routesById[matchState.current.routeId]!
 
-  const match = matchState.match
+  const match = () => matchState.current.match
 
-  if (match.status === 'redirected') {
-    invariant(isRedirect(match.error), 'Expected a redirect error')
-  }
-  let loaderResult = useSuspense(
-    router.getMatch(match.id)?.loadPromise
-      ? () => router.getMatch(match.id)?.loadPromise
-      : () => Promise.resolve(null),
-  )
-
-  if (match.status === 'pending') {
-    const pendingMinMs =
-      route.options.pendingMinMs ?? router.options.defaultPendingMinMs
-
-    if (
-      pendingMinMs &&
-      !router.getMatch(matchState.match.id)?.minPendingPromise
-    ) {
-      // Create a promise that will resolve after the minPendingMs
-      if (!router.isServer) {
-        const minPendingPromise = createControlledPromise<void>()
-
-        Promise.resolve().then(() => {
-          router.updateMatch(matchState.match.id, (prev) => ({
-            ...prev,
-            minPendingPromise,
-          }))
-        })
-
-        setTimeout(() => {
-          minPendingPromise.resolve()
-
-          // We've handled the minPendingPromise, so we can delete it
-          router.updateMatch(matchState.match.id, (prev) => ({
-            ...prev,
-            minPendingPromise: undefined,
-          }))
-        }, pendingMinMs)
-      }
-    }
+  if (match().status === 'redirected') {
+    invariant(isRedirect(match().error), 'Expected a redirect error')
+    router.getMatch(match().id)?.loadPromise?.resolve() // Resolve?
   }
 </script>
 
-{#if match.status === 'notFound'}
-  <RouteNotFound {router} {route} data={match.error} />
-{:else if match.status === 'redirected'}
-  {@render loaderResult?.()}
-{:else if match.status === 'error'}
+{#if match().status === 'notFound'}
+  <RouteNotFound {router} route={route()} data={match().error} />
+{:else if match().status === 'error'}
   {#if router.isServer}
-    {#if route.options.errorComponent}
-      {@render route.options.errorComponent({
-        error: match.error,
+    {#if route().options.errorComponent}
+      {@render route().options.errorComponent({
+        error: match().error,
         info: { componentStack: '' },
       })}
     {:else if router.options.defaultErrorComponent}
       {@render router.options.defaultErrorComponent({
-        error: match.error as Error,
+        error: match().error as Error,
         info: { componentStack: '' },
         reset: () => null,
       })}
     {:else}
-      <ErrorComponent error={match.error} />
+      <ErrorComponent error={match().error} />
     {/if}
   {:else}
     {(() => {
-      throw match.error
+      throw match().error
     })()}
   {/if}
-{:else if match.status === 'success'}
-  {#if route.options.component}
-    {@render route.options.component()}
+{:else if match().status === 'success'}
+  {#if route().options.component}
+    {@render route().options.component()}
   {:else if router.options.defaultComponent}
     {@render router.options.defaultComponent(undefined)}
   {:else}

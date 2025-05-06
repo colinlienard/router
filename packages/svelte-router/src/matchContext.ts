@@ -10,7 +10,7 @@ export function setMatchContext(value: string) {
   setContext(matchContextKey, value)
 }
 
-// // N.B. this only exists so we can conditionally call useContext on it when we are not interested in the nearest match
+// N.B. this only exists so we can conditionally call useContext on it when we are not interested in the nearest match
 const dummyMatchContextKey = Symbol()
 
 export function getDummyMatchContext(): string {

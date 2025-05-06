@@ -5,7 +5,7 @@ import {
   preloadWarning,
   removeTrailingSlash,
 } from '@tanstack/router-core'
-import { useRouterState } from './useRouterState'
+import { useRouterState } from './useRouterState.svelte.js'
 import { useRouter } from './useRouter'
 
 import { useIntersectionObserver } from './utils.svelte'
@@ -106,11 +106,11 @@ export function useLinkProps<
 
   const _options = () => ({
     ...options,
-    from,
+    from: from.current,
   })
 
   const next = $derived.by(() => {
-    currentSearch
+    currentSearch.current
     return router.buildLocation(_options() as any)
   })
 
@@ -300,12 +300,12 @@ export function useLinkProps<
   }
 
   // Get the active props
-  const resolvedActiveProps: HTMLAnchorAttributes = isActive
+  const resolvedActiveProps: HTMLAnchorAttributes = isActive.current
     ? (functionalUpdate(activeProps as any, {}) ?? {})
     : {}
 
   // Get the inactive props
-  const resolvedInactiveProps: HTMLAnchorAttributes = isActive
+  const resolvedInactiveProps: HTMLAnchorAttributes = isActive.current
     ? {}
     : functionalUpdate(inactiveProps, {})
 
@@ -356,7 +356,10 @@ export function useLinkProps<
       role: 'link',
       'aria-disabled': true,
     }),
-    ...(isActive && { 'data-status': 'active', 'aria-current': 'page' }),
+    ...(isActive.current && {
+      'data-status': 'active',
+      'aria-current': 'page',
+    }),
     // @ts-expect-error TODO: fix
     ...(isTransitioning && { 'data-transitioning': 'transitioning' }),
   }

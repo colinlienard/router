@@ -5,8 +5,7 @@ export const lazyShared = $state<{
   error: any
   comp: any
   ssr: boolean | undefined
-  load: () => Promise<any>
-}>({ error: null, comp: null, load: () => Promise.resolve(null), ssr: false })
+}>({ error: null, comp: null, ssr: false })
 
 export function lazyRouteComponent<
   T extends Record<string, any>,
@@ -41,7 +40,6 @@ export function lazyRouteComponent<
     return loadPromise
   }
 
-  lazyShared.load = load
   ;(lazyComp as any).preload = load
 
   return lazyComp as any
