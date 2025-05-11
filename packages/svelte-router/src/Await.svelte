@@ -8,11 +8,11 @@
     children: Snippet<[T]>
   } = $props()
 
-  let data = useSuspense(() => props.promise)
+  let promise = useSuspense(() => props.promise)
 </script>
 
-{#if data}
-  {@render props.children?.(data)}
-{:else}
+{#await promise}
   {@render props.fallback?.()}
-{/if}
+{:then data}
+  {@render props.children?.(data)}
+{/await}

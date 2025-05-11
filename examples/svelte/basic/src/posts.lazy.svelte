@@ -2,7 +2,7 @@
   import Self from './posts.lazy.svelte'
 
   export const Route = createLazyRoute('/posts')({
-    component: Self,
+    component: () => Self,
   })
 </script>
 

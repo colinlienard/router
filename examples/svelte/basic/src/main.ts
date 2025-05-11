@@ -92,11 +92,23 @@ const nestedPathlessLayout2Route = createRoute({
     setup(target) {
       mount(Link, {
         target,
-        props: { children: 'Go to route A', to: '/route-a' },
+        props: {
+          children: 'Go to route A',
+          to: '/route-a',
+          activeProps: {
+            class: 'font-bold',
+          },
+        },
       })
       mount(Link, {
         target,
-        props: { children: 'Go to route B', to: '/route-b' },
+        props: {
+          children: 'Go to route B',
+          to: '/route-b',
+          activeProps: {
+            class: 'font-bold',
+          },
+        },
       })
       mount(Outlet, { target })
     },

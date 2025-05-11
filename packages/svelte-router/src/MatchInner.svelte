@@ -1,11 +1,17 @@
 <script lang="ts">
-  import { type AnyRoute, isRedirect, pick } from '@tanstack/router-core'
+  import {
+    type AnyRoute,
+    createControlledPromise,
+    isRedirect,
+    pick,
+  } from '@tanstack/router-core'
   import { useRouter } from './useRouter'
   import { useRouterState } from './useRouterState.svelte.js'
   import Outlet from './Outlet.svelte'
   import RouteNotFound from './RouteNotFound.svelte'
   import ErrorComponent from './ErrorComponent.svelte'
   import invariant from 'tiny-invariant'
+  import { useSuspense } from './Suspense.svelte'
 
   let props: { matchId: string } = $props()
 
@@ -46,7 +52,44 @@
 
   if (match().status === 'redirected') {
     invariant(isRedirect(match().error), 'Expected a redirect error')
-    router.getMatch(match().id)?.loadPromise?.resolve() // Resolve?
+  }
+
+  useSuspense(
+    router.getMatch(match().id)?.loadPromise
+      ? () => router.getMatch(match().id)?.loadPromise
+      : () => Promise.resolve(null),
+  )
+
+  if (match().status === 'pending') {
+    const pendingMinMs =
+      route().options.pendingMinMs ?? router.options.defaultPendingMinMs
+
+    if (
+      pendingMinMs &&
+      !router.getMatch(matchState.match.id)?.minPendingPromise
+    ) {
+      // Create a promise that will resolve after the minPendingMs
+      if (!router.isServer) {
+        const minPendingPromise = createControlledPromise<void>()
+
+        Promise.resolve().then(() => {
+          router.updateMatch(matchState.match.id, (prev) => ({
+            ...prev,
+            minPendingPromise,
+          }))
+        })
+
+        setTimeout(() => {
+          minPendingPromise.resolve()
+
+          // We've handled the minPendingPromise, so we can delete it
+          router.updateMatch(matchState.match.id, (prev) => ({
+            ...prev,
+            minPendingPromise: undefined,
+          }))
+        }, pendingMinMs)
+      }
+    }
   }
 </script>
 

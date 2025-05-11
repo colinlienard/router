@@ -17,6 +17,7 @@
   import ErrorComponent from './ErrorComponent.svelte'
   import warning from 'tiny-warning'
   import MatchInner from './MatchInner.svelte'
+  import Suspense from './Suspense.svelte'
   import { setMatchContext } from './matchContext'
 
   let props: { matchId: string } = $props()
@@ -53,13 +54,22 @@
         router.options.notFoundRoute?.options.component)
       : route().options.notFoundComponent
 
-  const ResolvedCatchBoundary = $derived(
-    routeErrorComponent() ? CatchBoundary : SafeFragment,
-  )
+  const ResolvedSuspenseBoundary =
+    // If we're on the root route, allow forcefully wrapping in suspense
+    (!route().isRoot || route().options.wrapInSuspense) &&
+    (route().options.wrapInSuspense ??
+      PendingComponent() ??
+      (route().options.errorComponent as any)?.preload)
+      ? Suspense
+      : SafeFragment
 
-  const ResolvedNotFoundBoundary = $derived(
-    routeNotFoundComponent() ? CatchNotFound : SafeFragment,
-  )
+  const ResolvedCatchBoundary = routeErrorComponent()
+    ? CatchBoundary
+    : SafeFragment
+
+  const ResolvedNotFoundBoundary = routeNotFoundComponent()
+    ? CatchNotFound
+    : SafeFragment
 
   const parentRouteId = useRouterState({
     select: (s) => {
@@ -136,9 +146,7 @@
   }
 </script>
 
-{#if pending}
-  {@render PendingComponent()?.()}
-{:else}
+<ResolvedSuspenseBoundary fallback={PendingComponent()}>
   <ResolvedCatchBoundary
     errorComponent={routeErrorComponent || ErrorComponent}
     onCatch={(error: Error) => {
@@ -160,4 +168,4 @@
     <OnRendered />
     <ScrollRestoration />
   {/if}
-{/if}
+</ResolvedSuspenseBoundary>

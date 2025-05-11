@@ -1,10 +1,10 @@
 <script lang="ts">
-  import ErrorComponent from './ErrorComponent.svelte'
   import CatchBoundary from './CatchBoundary.svelte'
   import Match from './Match.svelte'
   import { useRouterState } from './useRouterState.svelte.js'
   import warning from 'tiny-warning'
   import { setMatchContext } from './matchContext'
+  import ErrorComponent from './ErrorComponent.svelte'
 
   let matchId = useRouterState({
     select: (s) => {
@@ -16,7 +16,6 @@
 </script>
 
 <CatchBoundary
-  errorComponent={ErrorComponent}
   onCatch={(error) => {
     warning(
       false,
@@ -25,6 +24,9 @@
     warning(false, error.message || error.toString())
   }}
 >
+  {#snippet errorComponent({ error })}
+    <ErrorComponent {error} />
+  {/snippet}
   {#if matchId.current}
     {#key matchId.current}
       <Match matchId={matchId.current} />

@@ -20,15 +20,13 @@
       throw error
     }
   }}
-  {errorComponent}
 >
   {@render props.children()}
+  {#snippet errorComponent({ error }: { error: Error })}
+    {#if isNotFound(error)}
+      {@render props.fallback?.({ error })}
+    {:else}
+      <ErrorComponent {error} />
+    {/if}
+  {/snippet}
 </CatchBoundary>
-
-{#snippet errorComponent({ error }: { error: Error })}
-  {#if isNotFound(error)}
-    {@render props.fallback?.({ error })}
-  {:else}
-    <ErrorComponent {error} />
-  {/if}
-{/snippet}

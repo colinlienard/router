@@ -36,49 +36,76 @@ export function useLinkProps<
   TMaskTo extends string = '',
 >(
   options: UseLinkPropsOptions<TRouter, TFrom, TTo, TMaskFrom, TMaskTo>,
-): HTMLAnchorAttributes {
+): { current: HTMLAnchorAttributes } {
   const router = useRouter()
   let isTransitioning = $state(false)
   let hasRenderFetched = false
 
-  const {
-    // custom props
-    activeProps = () => ({ className: 'active' }),
-    inactiveProps = () => ({}),
-    activeOptions,
-    to,
-    preload: userPreload,
-    preloadDelay: userPreloadDelay,
-    hashScrollIntoView,
-    replace,
-    startTransition,
-    resetScroll,
-    viewTransition,
-    // element props
-    children,
-    target,
-    disabled,
-    style,
-    class: className,
-    onclick,
-    onfocus,
-    onmouseenter,
-    onmouseleave,
-    ontouchstart,
-    ignoreBlocker,
-    ...rest
-  } = options
+  // custom props
+  const activeProps = options.activeProps || (() => ({ class: 'active' }))
+  const inactiveProps = options.inactiveProps || (() => ({}))
+  const activeOptions = options.activeOptions
+  const to = options.to
+  const userPreload = options.preload
+  const userPreloadDelay = options.preloadDelay
+  const hashScrollIntoView = options.hashScrollIntoView
+  const replace = options.replace
+  const startTransition = options.startTransition
+  const resetScroll = options.resetScroll
+  const viewTransition = options.viewTransition
+  // element props
+  const children = options.children
+  const target = options.target
+  const disabled = options.disabled
+  const style = options.style
+  const className = options.class
+  const onclick = options.onclick
+  const onfocus = options.onfocus
+  const onmouseenter = options.onmouseenter
+  const onmouseleave = options.onmouseleave
+  const ontouchstart = options.ontouchstart
+  const ignoreBlocker = options.ignoreBlocker
 
-  const {
-    // prevent these from being returned
-    params: _params,
-    search: _search,
-    hash: _hash,
-    state: _state,
-    mask: _mask,
-    reloadDocument: _reloadDocument,
-    ...propsSafeToSpread
-  } = rest
+  // Create safe props that can be spread
+  const propsSafeToSpread: Record<string, any> = {}
+  for (const key in options) {
+    if (
+      ![
+        'activeProps',
+        'inactiveProps',
+        'activeOptions',
+        'to',
+        'preload',
+        'preloadDelay',
+        'hashScrollIntoView',
+        'replace',
+        'startTransition',
+        'resetScroll',
+        'viewTransition',
+        'children',
+        'target',
+        'disabled',
+        'style',
+        'class',
+        'onClick',
+        'onFocus',
+        'onMouseEnter',
+        'onMouseLeave',
+        'onMouseOver',
+        'onMouseOut',
+        'onTouchStart',
+        'ignoreBlocker',
+        'params',
+        'search',
+        'hash',
+        'state',
+        'mask',
+        'reloadDocument',
+      ].includes(key)
+    ) {
+      propsSafeToSpread[key] = options[key as any]
+    }
+  }
 
   // If this link simply reloads the current route,
   // make sure it has a new key so it will trigger a data refresh
@@ -120,6 +147,7 @@ export function useLinkProps<
     }
     return userPreload ?? router.options.defaultPreload
   })
+
   const preloadDelay = () =>
     userPreloadDelay ?? router.options.defaultPreloadDelay ?? 0
 
@@ -204,20 +232,24 @@ export function useLinkProps<
 
   if (type === 'external') {
     return {
-      ...propsSafeToSpread,
-      // ref: innerRef as React.ComponentPropsWithRef<'a'>['ref'],
-      type,
-      href: to,
-      ...(children && { children }),
-      ...(target && { target }),
-      ...(disabled && { disabled }),
-      ...(style && { style }),
-      ...(className && { className }),
-      ...(onclick && { onclick }),
-      ...(onfocus && { onfocus }),
-      ...(onmouseenter && { onmouseenter }),
-      ...(onmouseleave && { onmouseleave }),
-      ...(ontouchstart && { ontouchstart }),
+      get current() {
+        return {
+          ...propsSafeToSpread,
+          // ref: innerRef as React.ComponentPropsWithRef<'a'>['ref'],
+          type,
+          href: to,
+          ...(children && { children }),
+          ...(target && { target }),
+          ...(disabled && { disabled }),
+          ...(style && { style }),
+          ...(className && { class: className }),
+          ...(onclick && { onclick }),
+          ...(onfocus && { onfocus }),
+          ...(onmouseenter && { onmouseenter }),
+          ...(onmouseleave && { onmouseleave }),
+          ...(ontouchstart && { ontouchstart }),
+        }
+      },
     }
   }
 
@@ -300,22 +332,17 @@ export function useLinkProps<
   }
 
   // Get the active props
-  const resolvedActiveProps: HTMLAnchorAttributes = isActive.current
-    ? (functionalUpdate(activeProps as any, {}) ?? {})
-    : {}
+  const resolvedActiveProps: () => HTMLAnchorAttributes = () =>
+    isActive.current ? (functionalUpdate(activeProps as any, {}) ?? {}) : {}
 
   // Get the inactive props
-  const resolvedInactiveProps: HTMLAnchorAttributes = isActive.current
-    ? {}
-    : functionalUpdate(inactiveProps, {})
+  const resolvedInactiveProps: () => HTMLAnchorAttributes = () =>
+    isActive.current ? {} : functionalUpdate(inactiveProps, {})
 
-  const resolvedClassName = [
-    className,
-    resolvedActiveProps.class,
-    resolvedInactiveProps.class,
-  ]
-    .filter(Boolean)
-    .join(' ')
+  const resolvedClassName = () =>
+    [className, resolvedActiveProps().class, resolvedInactiveProps().class]
+      .filter(Boolean)
+      .join(' ')
 
   const resolvedStyle = {
     // @ts-expect-error TODO: fix
@@ -338,30 +365,32 @@ export function useLinkProps<
   })
 
   return {
-    ...propsSafeToSpread,
-    ...resolvedActiveProps,
-    ...resolvedInactiveProps,
-    href,
-    // ref: mergeRefs(ref, _options().ref),
-    onclick: composeEventHandlers([onclick, handleClick]),
-    onfocus: composeEventHandlers([onfocus, handleFocus]),
-    onmouseenter: composeEventHandlers([onmouseenter, handleEnter]),
-    onmouseleave: composeEventHandlers([onmouseleave, handleLeave]),
-    ontouchstart: composeEventHandlers([ontouchstart, handleTouchStart]),
-    disabled: !!disabled,
-    target: target,
-    ...(Object.keys(resolvedStyle).length && { style: resolvedStyle }),
-    ...(resolvedClassName && { class: resolvedClassName }),
-    ...(disabled && {
-      role: 'link',
-      'aria-disabled': true,
-    }),
-    ...(isActive.current && {
-      'data-status': 'active',
-      'aria-current': 'page',
-    }),
-    // @ts-expect-error TODO: fix
-    ...(isTransitioning && { 'data-transitioning': 'transitioning' }),
+    get current() {
+      return {
+        ...propsSafeToSpread,
+        ...resolvedActiveProps,
+        ...resolvedInactiveProps,
+        href,
+        onclick: composeEventHandlers([onclick, handleClick]),
+        onfocus: composeEventHandlers([onfocus, handleFocus]),
+        onmouseenter: composeEventHandlers([onmouseenter, handleEnter]),
+        onmouseleave: composeEventHandlers([onmouseleave, handleLeave]),
+        ontouchstart: composeEventHandlers([ontouchstart, handleTouchStart]),
+        disabled: !!disabled,
+        target: target,
+        ...(Object.keys(resolvedStyle).length && { style: resolvedStyle }),
+        ...(resolvedClassName() && { class: resolvedClassName() }),
+        ...(disabled && {
+          role: 'link',
+          'aria-disabled': true,
+        }),
+        ...(isActive.current && {
+          'data-status': 'active',
+          'aria-current': 'page',
+        }),
+        ...(isTransitioning ? { 'data-transitioning': 'transitioning' } : {}),
+      }
+    },
   }
 }
 
@@ -385,7 +414,7 @@ export type ActiveLinkOptions<
   ActiveLinkOptionProps<TComp>
 
 type ActiveLinkProps<TComp> = Partial<
-  LinkComponentSolidProps<TComp> & {
+  LinkComponentSvelteProps<TComp> & {
     [key: `data-${string}`]: unknown
   }
 >
@@ -427,8 +456,10 @@ export interface LinkPropsChildren {
       >
 }
 
-type LinkComponentSolidProps<TComp> = TComp extends HTMLBaseElement
-  ? Omit<HTMLAttributes<TComp>, keyof CreateLinkProps>
+type LinkComponentSvelteProps<TComp> = TComp extends HTMLBaseElement
+  ? Omit<HTMLAttributes<TComp>, keyof CreateLinkProps> & {
+      children: Snippet | string
+    }
   : never
 
 export type LinkComponentProps<
@@ -438,7 +469,7 @@ export type LinkComponentProps<
   TTo extends string | undefined = '.',
   TMaskFrom extends string = TFrom,
   TMaskTo extends string = '.',
-> = LinkComponentSolidProps<TComp> &
+> = LinkComponentSvelteProps<TComp> &
   LinkProps<TComp, TRouter, TFrom, TTo, TMaskFrom, TMaskTo>
 
 export type CreateLinkProps = LinkProps<

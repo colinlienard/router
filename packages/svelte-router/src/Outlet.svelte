@@ -5,6 +5,7 @@
   import { rootRouteId } from '@tanstack/router-core'
   import Match from './Match.svelte'
   import RouteNotFound from './RouteNotFound.svelte'
+  import Suspense from './Suspense.svelte'
 
   const router = useRouter()
   const matchId = getMatchContext()
@@ -36,11 +37,11 @@
   <RouteNotFound {router} route={route()} data={undefined} />
 {:else if childMatchId.current}
   {#if matchId === rootRouteId}
-    <!-- TODO -->
-    <!-- {@render router.options.defaultPendingComponent?.(undefined)} -->
-    {#key childMatchId.current}
-      <Match matchId={childMatchId.current} />
-    {/key}
+    <Suspense fallback={router.options.defaultPendingComponent}>
+      {#key childMatchId.current}
+        <Match matchId={childMatchId.current} />
+      {/key}
+    </Suspense>
   {:else}
     {#key childMatchId.current}
       <Match matchId={childMatchId.current} />
